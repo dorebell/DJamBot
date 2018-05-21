@@ -17,6 +17,8 @@ import os
 import numpy as np
 import _pickle as pickle
 
+#hello, world
+
 import data_class
 import chord_model
 
