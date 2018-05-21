@@ -12,6 +12,7 @@ def get_chord_train_and_test_set(train_set_size, test_set_size):
     test_set = data[train_set_size:train_set_size+test_set_size]
     return train_set, test_set
 
+#need to change this function - 
 def get_ind_train_and_test_set(train_set_size, test_set_size):
     data, chord_data = make_ind_data_set()
     train_set = data[:train_set_size]

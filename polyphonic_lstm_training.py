@@ -91,6 +91,7 @@ chord_embed_model = chord_model.Embed_Chord_Model(chord_model_path)
 print('creating model...')
 model = Sequential()
 # model.add(LSTM(lstm_size, batch_size=batch_size, input_shape=(step_size, new_num_notes+chord_dim+counter_size), stateful=True))
+#need to change this line - change shape to match the new input representation
 model.add(LSTM(lstm_size,  batch_input_shape=(batch_size,step_size, new_num_notes+chord_dim+counter_size), stateful=True))
 
 model.add(Dense(new_num_notes))
