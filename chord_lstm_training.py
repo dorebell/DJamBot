@@ -137,7 +137,7 @@ def train():
     
         if e%save_step is 0:
             print('saving model')
-            model_save_path = model_path + 'model_' + 'Epoch' + str(e) + '_' + str(i+1) + model_filetype
+            model_save_path = model_path + 'model_' + 'Epoch' + str(e) + model_filetype
             model.save(model_save_path)
 
 def save_params():
