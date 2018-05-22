@@ -240,8 +240,8 @@ def save_histo_oct_from_midi_folder(tempo_folder,histo_folder):
 #                invalid_files_counter +=1
 
 
-def pianoroll_folder():
-    #Not Used anymore!!
+def pianoroll_folder(tempo_folder,pickle_folder):
+    #Not Used anymore!! #hah jk - DDJZ
     for path, subdirs, files in os.walk(tempo_folder):
         for name in files:
             _path = path.replace('\\', '/') + '/'
@@ -306,6 +306,9 @@ def do_all_steps():
     print('making note indexes')
     note_ind_folder(tempo_folder2,roll_folder) # contains changeable material - DDJZ # changed - DDJZ
 
+    # to save pianorolls - DDJZ
+    print('making pianorolls')
+    pianoroll_folder(tempo_folder2, pickle_folder)
     
     print('histogramming')
     save_histo_oct_from_midi_folder(tempo_folder2,histo_folder2) # already changed from above - DDJZ

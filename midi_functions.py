@@ -156,14 +156,14 @@ def midi_to_histo_oct(samples_per_bar,octave, fs, name, path, histo_path):
     histo_oct = histo_bar_to_histo_oct(histo_bar, octave)
     pickle.dump(histo_oct,open(histo_path + name + '.pickle' , 'wb'))
 
-
+# changed - DDJZ
 def save_pianoroll(name, path, target_path, fs):
     mid = pm.PrettyMIDI(path + name)
     p = mid.get_piano_roll(fs=fs)
-    for i, _ in enumerate(p):
-        for j, _ in enumerate(p[i]):
-            if p[i, j] != 0:
-                p[i,j] = 1
+#    for i, _ in enumerate(p):
+#        for j, _ in enumerate(p[i]):
+#            if p[i, j] != 0:
+#                p[i,j] = 1
 #    print(np.argwhere(p[:,:]))
     pickle.dump(p,open(target_path + name + '.pickle', 'wb'))
 
