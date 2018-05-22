@@ -233,6 +233,7 @@ def save_histo_oct_from_midi_folder(tempo_folder,histo_folder):
                 os.makedirs(target_path)
             try:
                 mf.midi_to_histo_oct(samples_per_bar,octave, fs, _name, _path, target_path)
+                # this is where pianoroll representation is used -JZ
             except (ValueError, EOFError, IndexError, OSError, KeyError, ZeroDivisionError) as e:
                 exception_str = 'Unexpected error in ' + name  + ':\n', e, sys.exc_info()[0]
                 print(exception_str)
@@ -293,7 +294,7 @@ def do_all_steps():
     change_tempo_folder(source_folder,tempo_folder1) 
     
     print('histogramming')
-    save_histo_oct_from_midi_folder(tempo_folder1,histo_folder1)
+    save_histo_oct_from_midi_folder(tempo_folder1,histo_folder1) # contains changeable material - JZ
 
     print('make song histo')
     save_song_histo_from_histo(histo_folder1,song_histo_folder)
