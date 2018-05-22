@@ -294,7 +294,7 @@ def do_all_steps():
     change_tempo_folder(source_folder,tempo_folder1) 
     
     print('histogramming')
-    save_histo_oct_from_midi_folder(tempo_folder1,histo_folder1) # contains changeable material - DDJZ
+    save_histo_oct_from_midi_folder(tempo_folder1,histo_folder1) # contains changeable material - DDJZ # changed - DDJZ
 
     print('make song histo')
     save_song_histo_from_histo(histo_folder1,song_histo_folder) # no need to change - DDJZ
@@ -304,7 +304,7 @@ def do_all_steps():
     
 
     print('making note indexes')
-    note_ind_folder(tempo_folder2,roll_folder) # contains changeable material - DDJZ
+    note_ind_folder(tempo_folder2,roll_folder) # contains changeable material - DDJZ # changed - DDJZ
 
     
     print('histogramming')

@@ -115,7 +115,8 @@ def pianoroll_to_histo_bar(pianoroll, samples_per_bar):
     #    print(i/samples_per_bar)
     #    print('i: ',i)
     #    print(i+samples_per_bar)
-        histo_bar[:,int(i/samples_per_bar)] = np.sum(pianoroll[:,i:i+samples_per_bar], axis=1) # this should be changed - DDJZ
+    #    histo_bar[:,int(i/samples_per_bar)] = np.sum(pianoroll[:,i:i+samples_per_bar], axis=1) # this should be changed - DDJZ
+        histo_bar[:,int(i/samples_per_bar)] = np.count_nonzero(pianoroll[:,i:i+samples_per_bar],axis=1)
     return histo_bar
 
 
@@ -149,8 +150,9 @@ def save_pianoroll_to_histo_oct(samples_per_bar,octave, name, path, histo_path):
 
 def midi_to_histo_oct(samples_per_bar,octave, fs, name, path, histo_path):
 #    print(path + name)
-    pianoroll = get_pianoroll(name, path, fs) #this is where pianoroll representation is used - DDJZ
-    histo_bar = pianoroll_to_histo_bar(pianoroll, samples_per_bar)
+    #pianoroll = get_pianoroll(name, path, fs) #this is where pianoroll representation is used - DDJZ
+    pianoroll = get_notes(name, path, fs)
+    histo_bar = pianoroll_to_histo_bar(pianoroll, samples_per_bar) # this needs to be changed - DDJZ
     histo_oct = histo_bar_to_histo_oct(histo_bar, octave)
     pickle.dump(histo_oct,open(histo_path + name + '.pickle' , 'wb'))
 
@@ -187,17 +189,17 @@ def double_sample(mid):
     return p
 
 
-# change - DDJZ
+# change - DDJZ # changed - DDJZ
 def save_note_ind(name, path, target_path, fs):
     mid = pm.PrettyMIDI(path + name)
     if double_sample_notes:
         p = double_sample(mid)
     else:
         p = mid.get_piano_roll(fs=fs)
-    for i, _ in enumerate(p):
-        for j, _ in enumerate(p[i]):
-            if p[i, j] != 0:
-                p[i,j] = 1
+#    for i, _ in enumerate(p):
+#        for j, _ in enumerate(p[i]):
+#            if p[i, j] != 0:
+#                p[i,j] = 1
     n = mf.pianoroll_to_note_index(p)
 #    print(np.argwhere(p[:,:]))
     pickle.dump(n,open(target_path + name + '.pickle', 'wb'))
