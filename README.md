@@ -1,4 +1,6 @@
-# JamBot: Music Theory Aware Chord Based Generation of Polyphonic Music with LSTMs
+# DJamBot: Combining JamBot's Chord Based LSTM Generation of Polyphonic Music with Dynamics
+
+This repository is under construction. Forked from https://github.com/brunnergino/JamBot, with the intetion of adding dynamics.
 
 ## Paper
 
