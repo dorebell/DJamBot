@@ -7,8 +7,8 @@ import sys
 import pretty_midi as pm
 import mido
 from collections import Counter
-    
 
+#probably shouldn't need to be modified - histogram seems only used for counting keys and chords -DDJZ    
 def histo_of_all_songs():
     histo = [0]*128
     for path, subdirs, files in os.walk(tempo_folder):
@@ -16,13 +16,15 @@ def histo_of_all_songs():
             _path = path.replace('\\', '/') + '/'
             _name = name.replace('\\', '/')
 #            _name = _name[:-7]
+            #notes = mf.get_noteswithvelocity(_name, _path, fs)
+            #histo += np.sum(notes, axis=1)
             pianoroll = mf.get_pianoroll(_name, _path, fs)
             histo += np.sum(pianoroll, axis=1)
 #            print(histo)
 #            print(_name)
     return histo
         
-
+#shoudln't need to be changed - DDJZ
 def get_scales():
     # get all scales for every root note
     dia = tuple((0,2,4,5,7,9,11))
@@ -47,7 +49,7 @@ def get_scales():
     
     return diatonic_scales, harmonic_scales, melodic_scales, blues_scales
 
-
+#shoudln't need to be changed - DDJZ
 def get_shift(scale):
     diatonic_scales, harmonic_scales, melodic_scales, blues_scales = get_scales()
     if scale in diatonic_scales:
@@ -59,8 +61,7 @@ def get_shift(scale):
     else:
         return 'other'
 
-
-
+#shouldn't need to be changed -DDJZ
 def shift_midi_files(song_histo_folder,tempo_folder,shifted_folder):
     for path, subdirs, files in os.walk(song_histo_folder):
         for name in files:
@@ -81,7 +82,7 @@ def shift_midi_files(song_histo_folder,tempo_folder,shifted_folder):
                     exception_str = 'Unexpected error in ' + name  + ':\n', e, sys.exc_info()[0]
                     print(exception_str)
 
-
+#shouldn't need to be changed - DDJZ
 def count_scales():
     # get all scales for every root note
     diatonic_scales, harmonic_scales, melodic_scales, blues_scales = get_scales()
@@ -109,7 +110,7 @@ def count_scales():
                 other_cntr[key] +=1
     return scale_cntr, other_cntr
     
-
+#shouldn't need to be changed - DDJZ
 def count_keys():
     key_cntr = Counter()
     for path, subdirs, files in os.walk(song_histo_folder):
