@@ -135,6 +135,7 @@ def test():
 
 # Make feature vectors with the notes and the chord information
 
+#needs to be changed -DDJZ
 def make_feature_vector(song, chords, chord_embed_method):
     
     if  next_chord_feature:

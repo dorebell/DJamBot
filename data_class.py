@@ -133,7 +133,7 @@ def make_one_hot_vector(song, num_chords):
         onehot_song.append(onehot_chord)
     return onehot_song
 
-
+#needs to be changed to replace the 1 with a velocity - DDJZ
 def make_one_hot_note_vector(song, num_notes):
     onehot_song = []
     for step in song:
