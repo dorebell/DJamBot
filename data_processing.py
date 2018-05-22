@@ -233,7 +233,7 @@ def save_histo_oct_from_midi_folder(tempo_folder,histo_folder):
                 os.makedirs(target_path)
             try:
                 mf.midi_to_histo_oct(samples_per_bar,octave, fs, _name, _path, target_path)
-                # this is where pianoroll representation is used -JZ
+                # this is where pianoroll representation is used - DDJZ
             except (ValueError, EOFError, IndexError, OSError, KeyError, ZeroDivisionError) as e:
                 exception_str = 'Unexpected error in ' + name  + ':\n', e, sys.exc_info()[0]
                 print(exception_str)
@@ -256,7 +256,7 @@ def pianoroll_folder():
                 print(exception_str)
 #                invalid_files_counter +=1
 
-
+# change - DDJZ
 def note_ind_folder(tempo_folder,roll_folder):
     for path, subdirs, files in os.walk(tempo_folder):
         for name in files:
@@ -266,7 +266,7 @@ def note_ind_folder(tempo_folder,roll_folder):
             if not os.path.exists(target_path):
                 os.makedirs(target_path)
             try:
-                mf.save_note_ind(_name, _path, target_path, fs)
+                mf.save_note_ind(_name, _path, target_path, fs) #change - DDJZ
             except (ValueError, EOFError, IndexError, OSError, KeyError, ZeroDivisionError) as e:
                 exception_str = 'Unexpected error in ' + name  + ':\n', e, sys.exc_info()[0]
                 print(exception_str)
@@ -294,28 +294,28 @@ def do_all_steps():
     change_tempo_folder(source_folder,tempo_folder1) 
     
     print('histogramming')
-    save_histo_oct_from_midi_folder(tempo_folder1,histo_folder1) # contains changeable material - JZ
+    save_histo_oct_from_midi_folder(tempo_folder1,histo_folder1) # contains changeable material - DDJZ
 
     print('make song histo')
-    save_song_histo_from_histo(histo_folder1,song_histo_folder)
+    save_song_histo_from_histo(histo_folder1,song_histo_folder) # no need to change - DDJZ
     
     print('shifting midi files')
-    shift_midi_files(song_histo_folder,tempo_folder1,tempo_folder2)
+    shift_midi_files(song_histo_folder,tempo_folder1,tempo_folder2) # no need to change - DDJZ
     
 
     print('making note indexes')
-    note_ind_folder(tempo_folder2,roll_folder)
+    note_ind_folder(tempo_folder2,roll_folder) # contains changeable material - DDJZ
 
     
     print('histogramming')
-    save_histo_oct_from_midi_folder(tempo_folder2,histo_folder2)
+    save_histo_oct_from_midi_folder(tempo_folder2,histo_folder2) # already changed from above - DDJZ
 
     print('extracting chords')
-    save_chords_from_histo(histo_folder2,chords_folder)
+    save_chords_from_histo(histo_folder2,chords_folder) # no need to change - DDJZ
     print('getting dictionary')
-    chord_to_index, index_to_chord = make_chord_dict(chords_folder, num_chords)
+    chord_to_index, index_to_chord = make_chord_dict(chords_folder, num_chords) # no need to change - DDJZ
     print('converting chords to index sequences')
-    save_index_from_chords(chords_folder,chords_index_folder)
+    save_index_from_chords(chords_folder,chords_index_folder) # no need to change - DDJZ
 
 
 if __name__=="__main__":
