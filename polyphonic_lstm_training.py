@@ -34,13 +34,13 @@ from keras.backend.tensorflow_backend import set_session
 
 
 # Path to the fully trained chord model for the chord embeddings:
-chord_model_path = 'models/chords/1523433134-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/model_Epoch10.pickle'
+chord_model_path = 'models/chords/1527396952-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/model_Epoch20.pickle'
 # Path where the polyphonic models are saved:
 model_path = 'models/chords_mldy/'
 model_filetype = '.pickle'
 
 
-epochs = 100
+epochs = 20 # 100
 train_set_size = 4
 test_set_size = 1
 test_step = 360          # Calculate error for test set every this many songs
@@ -98,7 +98,7 @@ model.add(Dense(new_num_notes))
 model.add(Activation('sigmoid'))
 if optimizer == 'RMS': optimizer = RMSprop(lr=learning_rate)
 if optimizer == 'Adam': optimizer = Adam(lr=learning_rate)
-loss = 'categorical_crossentropy'
+loss = 'categorical_crossentropy' # consider changing
 model.compile(optimizer, loss)
 
 
@@ -135,7 +135,8 @@ def test():
 
 # Make feature vectors with the notes and the chord information
 
-#needs to be changed -DDJZ
+#needs to be changed--the vectors should not be "one" hot -DDJZ
+'''
 def make_feature_vector(song, chords, chord_embed_method):
     
     if  next_chord_feature:
@@ -167,6 +168,57 @@ def make_feature_vector(song, chords, chord_embed_method):
             X_chords_new.append(X_chords[ind])
             
     X_chords_new = np.array(X_chords_new)    
+    X = np.append(X, X_chords_new, axis=1)
+    
+        
+    
+    if counter_feature:
+        counter = [[0,0,0],[0,0,1],[0,1,0],[0,1,1],[1,0,0],[1,0,1],[1,1,0],[1,1,1]]
+        if next_chord_feature:
+            counter = np.array(counter*(len(X_chords)-1))[:-1]
+        else:
+            counter = np.array(counter*len(X_chords))[:-1]
+        X = np.append(X, counter, axis=1)
+    X = X[:-1]
+    X = np.reshape(X, (X.shape[0], 1, X.shape[1]))
+    
+    return X, Y
+'''
+
+#changed; now song is assumed to be of type pianoroll - DDJZ
+def make_feature_vector(song, chords, chord_embed_method):
+    
+    if  next_chord_feature:
+#        X = np.array(data_class.make_one_hot_note_vector(song[:(((len(chords)-1)*fs*2)-1)], num_notes))
+        X = song.T[:(((len(chords)-1)*fs*2)-1)]
+    else:
+#        X = np.array(data_class.make_one_hot_note_vector(song[:((len(chords)*fs*2)-1)], num_notes))
+        X = song.T[:((len(chords)*fs*2)-1)]
+#    print(X.shape)
+    X = X[:,low_crop:high_crop]
+    if chord_embed_method == 'embed':
+        X_chords = list(chord_embed_model.embed_chords_song(chords))
+    elif chord_embed_method == 'onehot':
+        X_chords = data_class.make_one_hot_vector(chords, num_chords)
+    elif chord_embed_method == 'int':
+        X_chords = [[x] for x in chords]
+    X_chords_new = []
+    Y = X[1:]
+    
+    for j, _ in enumerate(X):
+        ind = int(((j+1)/(fs*2)))
+        
+        if next_chord_feature:
+            ind2 = int(((j+1)/(fs*2)))+1
+#            print(j)
+#            print(ind, ' ', ind2)
+#            print(X_chords[ind].shape)
+            X_chords_new.append(list(X_chords[ind])+list(X_chords[ind2]))
+        else:
+            X_chords_new.append(X_chords[ind])
+            
+    X_chords_new = np.array(X_chords_new)
+   
     X = np.append(X, X_chords_new, axis=1)
     
         

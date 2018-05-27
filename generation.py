@@ -13,18 +13,20 @@ import data_class
 
 
 
-chord_model_folder = 'models/chords/1523433134-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/'
-chord_model_name = 'model_Epoch10_4.pickle'
+chord_model_folder = 'models/chords/1527396952-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/'
+chord_model_name = 'model_Epoch20.pickle'
 
 melody_model_folder = 'models/chords_mldy/Shifted_True_NextChord_True_ChordEmbed_embed_Counter_True_Highcrop_84_Lowcrop_24_Lr_1e-06_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1/'
-melody_model_name = 'modelEpoch2.pickle'
+melody_model_name = 'modelEpoch20.pickle'
 
 midi_save_folder = 'predicted_midi/'
 
-seed_path = 'data/' + shift_folder + 'indroll/'
+# changed seed_path to be pianoroll folder
+#seed_path = 'data/' + shift_folder + 'indroll/'
+seed_path = pickle_folder
 seed_chord_path = 'data/' + shift_folder + 'chord_index/'
 
-seed_name = 'Piano Concerto n2 op19 1mov.mid.pickle'
+seed_name = 'rufus.mid.pickle'
 
 
 # Parameters for song generation:
@@ -65,6 +67,7 @@ def sample_probability_vector(prob_vector):
         note_vector[i] = np.random.multinomial(1, [1 - prob, prob])[1]
     return note_vector
 
+# this might not be needed - DDJZ
 def ind_to_onehot(ind):
     onehot = np.zeros((len(ind), num_notes))
     for i, step in enumerate(ind):
@@ -72,10 +75,14 @@ def ind_to_onehot(ind):
             onehot[i,note]=1
     return onehot
 
-sd = pickle.load(open(seed_path+seed_name, 'rb'))[:8*seed_length]
+#sd = pickle.load(open(seed_path+seed_name, 'rb'))[:8*seed_length]
+sd = pickle.load(open(seed_path+seed_name, 'rb'))
+
 seed_chords = pickle.load(open(seed_chord_path+seed_name, 'rb'))[:seed_length]
 
-seed = ind_to_onehot(sd)[:,low_crop:high_crop]
+#changed - DDJZ
+#seed = ind_to_onehot(sd)[:,low_crop:high_crop]
+seed = sd.T[:8*seed_length, low_crop:high_crop]
 
 print('loading polyphonic model ...')
 melody_model = load_model(melody_model_folder+melody_model_name)
@@ -123,7 +130,7 @@ if counter_feature:
     chords = np.append(chords, counter, axis=1)
 
 
-seed = np.append(seed, chords[:seed.shape[0]], axis=1)    
+seed = np.append(seed, chords[:seed.shape[0]], axis=1)
 
 seed = np.reshape(seed, (seed.shape[0], 1, 1, seed.shape[1]))
 
@@ -153,6 +160,9 @@ ind = np.nonzero(rest)
 #rest = np.reshape(rest, (rest.shape[1], rest.shape[0]))
 #note_ind = mf.pianoroll_to_note_index(rest)
 #print(ch_model.song)
+
+#test
+pickle.dump(rest.T,open(midi_save_folder+'output_pianoroll.pickle', 'wb'))
 
 instrument_names = ['Electric Guitar (jazz)', 'Acoustic Grand Piano',
 'Bright Acoustic Piano', 'Electric Piano 1', 'Electric Piano 2', 'Drawbar Organ',

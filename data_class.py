@@ -110,6 +110,7 @@ def make_data_set():
             data.append(song)
     return data
 
+'''
 def make_ind_data_set():
     data = []
     chord_data = []
@@ -123,7 +124,21 @@ def make_ind_data_set():
             data.append(song)
             chord_data.append(song_chords)
     return data, chord_data
+'''
 
+def make_ind_data_set():
+    data = []
+    chord_data = []
+    for path, subdirs, files in os.walk(pickle_folder):
+        for name in files:
+            _path = path.replace('\\', '/') + '/'
+            _name = name.replace('\\', '/')
+            song = pickle.load(open(_path + _name, 'rb'))
+            _chord_path = _path.replace('pianoroll', 'chord_index')
+            song_chords = pickle.load(open(_chord_path + _name, 'rb'))
+            data.append(song)
+            chord_data.append(song_chords)
+    return data, chord_data
 
 def make_one_hot_vector(song, num_chords):
     onehot_song = []
@@ -135,6 +150,8 @@ def make_one_hot_vector(song, num_chords):
 
 #needs to be changed to replace the 1 with a velocity - DDJZ
 def make_one_hot_note_vector(song, num_notes):
+    #test
+    print(song)
     onehot_song = []
     for step in song:
         onehot_step = [0]*num_notes
