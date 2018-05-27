@@ -2,6 +2,8 @@
 
 This repository is under construction. Forked from https://github.com/brunnergino/JamBot, with the intetion of adding dynamics.
 
+Current version: 0.0.2
+
 ## Paper
 
 JamBot: Music Theory Aware Chord Based Generation of Polyphonic Music with LSTMs", presented at ICTAI 2017. 
