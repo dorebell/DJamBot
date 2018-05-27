@@ -1,0 +1,13 @@
+Version Updates
+
+v.0.0.2 - 05/26/18
+- mostly done accommodating pianoroll data type
+  - model inputs are now pianoroll files (i.e. arrays where nonzero entries are not necessarily 1)
+- issue to resolve: output still binary (i.e. probability vector is outputted, with notes sampled from prob vector. How to add velocities to output?)
+  - relatedly, what is the best cost to use?
+
+v.0.0.1 - 05/21/18
+- changed data_processing to produce pianoroll files without normalizing velocities
+
+v.0.0.0 - 05/21/18
+- Forked from brunnergino/JamBot
