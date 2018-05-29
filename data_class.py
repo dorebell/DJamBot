@@ -1,4 +1,4 @@
-# Author: Jonas Wiesendanger wjonas@student.ethz.ch
+S# Author: Jonas Wiesendanger wjonas@student.ethz.ch
 from settings import *
 import numpy as np
 import _pickle as pickle

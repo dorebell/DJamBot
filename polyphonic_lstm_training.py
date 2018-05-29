@@ -95,10 +95,11 @@ model = Sequential()
 model.add(LSTM(lstm_size,  batch_input_shape=(batch_size,step_size, new_num_notes+chord_dim+counter_size), stateful=True))
 
 model.add(Dense(new_num_notes))
-model.add(Activation('sigmoid'))
+#removed sigmoid activation so volumes will not be probabilities but just values - DDJZ
+#model.add(Activation('sigmoid'))
 if optimizer == 'RMS': optimizer = RMSprop(lr=learning_rate)
 if optimizer == 'Adam': optimizer = Adam(lr=learning_rate)
-loss = 'categorical_crossentropy' # consider changing
+loss = 'mean_squared_error' #changed from categorical_crossentropy, since output no longer probability.
 model.compile(optimizer, loss)
 
 
