@@ -18,7 +18,7 @@ def get_note_train_and_test_set(train_set_size, test_set_size):
     test_set = data[train_set_size:train_set_size+test_set_size]
     chord_train_set = chord_data[:train_set_size]
     chord_test_set = chord_data[train_set_size:train_set_size+test_set_size]
-    return train_set, test_set, chord_train_set, chord_test_set 
+    return train_set, test_set, chord_train_set, chord_test_set
 
 #unused -DDJZ
 def get_train_and_test_set(train_set_size, test_set_size):
@@ -135,7 +135,7 @@ def make_note_data_set():
             _path = path.replace('\\', '/') + '/'
             _name = name.replace('\\', '/')
             song = pickle.load(open(_path + _name, 'rb'))
-            _chord_path = _path.replace('indroll', 'chord_index')
+            _chord_path = _path.replace('notes', 'chord_index')
             song_chords = pickle.load(open(_chord_path + _name, 'rb'))
             data.append(song)
             chord_data.append(song_chords)

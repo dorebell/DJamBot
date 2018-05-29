@@ -321,7 +321,7 @@ def do_all_steps():
 
     # to save velocities- DDJZ
     print('making note vectors')
-    notes_folder(tempo_folder2,notes_folder)
+    notes_folder(tempo_folder2,note_folder)
     
     print('histogramming')
     save_histo_oct_from_midi_folder(tempo_folder2,histo_folder2) # already changed from above - DDJZ

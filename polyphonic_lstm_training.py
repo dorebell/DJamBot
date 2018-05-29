@@ -2,7 +2,7 @@
 from settings import *
 from keras.models import Sequential
 from keras.layers.recurrent import LSTM
-from keras.layers import Dense, Activation
+from keras.layers import Dense, Activation, Lambda, Concatenate
 from keras.layers.embeddings import Embedding
 from keras.optimizers import RMSprop, Adam
 # from keras.utils import to_categorical
@@ -34,12 +34,12 @@ from keras.backend.tensorflow_backend import set_session
 
 
 # Path to the fully trained chord model for the chord embeddings:
-chord_model_path = 'models/chords/1527592682-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/model_epoch20.pickle'
+chord_model_path = 'models/chords/1527592615-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/model_epoch20.pickle'
 # Path where the polyphonic models are saved:
 model_path = 'models/chords_mldy/'
 model_filetype = '.pickle'
 
-
+##are we only training on 5 examples????? --DJZ
 epochs = 20 # 100
 train_set_size = 4
 test_set_size = 1
@@ -94,12 +94,13 @@ model = Sequential()
 
 #support for adding multiple LSTM layers -DDJZ
 for l in range(num_poly_layers):
-    model.add(LSTM(lstm_size,  batch_input_shape=(batch_size, step_size, new_num_notes+chord_dim+counter_size, 2), stateful=True))
+    ##THIS IS WRONG AND NEEDS TO BE FIXED - I think Keras only supports LSTMs with 3 input dimensions, so some serious change is necessary.
+    model.add(LSTM(lstm_size,  batch_input_shape=(batch_size, step_size, (new_num_notes+chord_dim+counter_size)*2), stateful=True))
 
 note_dense = Dense(new_num_notes, activation='sigmoid', name='note_dense')
 volume_dense = Dense(new_num_notes, name='volume_dense')
 
-model.add(Keras.Lambda(lambda x : tf.stack([note_dense(x), volume_dense(x)], axis = -1)))
+model.add(Lambda(lambda x : Concatenate(axis = -1)([note_dense(x), volume_dense(x)])))
 #removed sigmoid activation so volumes will not be probabilities but just values - DDJZ
 #model.add(Activation('sigmoid'))
 if optimizer == 'RMS': optimizer = RMSprop(lr=learning_rate)
@@ -239,7 +240,7 @@ def make_feature_vector(song, chords, chord_embed_method):
             counter = np.array(counter*len(X_chords))[:-1]
         X = np.append(X, counter, axis=1)
     X = X[:-1]
-    X = np.reshape(X, (X.shape[0], 1, X.shape[1]))
+    X = np.reshape(X, (X.shape[0], 1, -1))
     
     return X, Y
 

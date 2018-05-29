@@ -140,19 +140,22 @@ for step in seed:
     
     next_step = melody_model.predict(step)
     
-    
-notes = sample_probability_vector(next_step[0])
+probs = next_step[0, :, 0]
+vels =  next_step[0, :, 1] 
+notes = sample_probability_vector(probs)*vels
+notes = np.reshape(notes, (notes.shape[0], -1, 2))
+
 
 rest = []
-rest.append(notes)
+rest.append(probs)
 
 
 for chord in chords[seed.shape[0]:]:
-    next_input = np.append(notes, chord, axis=0)
+    next_input = np.append(probs, chord, axis=0)
     next_input = np.reshape(next_input, (1, 1, next_input.shape[0]))
     next_step = melody_model.predict(next_input)
     notes = sample_probability_vector(next_step[0])
-    rest.append(notes)
+    rest.append(probs)
 
 rest = np.array(rest)
 rest = np.pad(rest, ((0,0),(low_crop,num_notes-high_crop)), mode='constant', constant_values=0)

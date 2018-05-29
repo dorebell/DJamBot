@@ -1,0 +1,11 @@
+epochs: 20
+train_set_size: 4
+test_set_size: 1
+lstm_size: 512
+embedding_dim: 10
+learning_rate: 1e-05
+shuffle_train_set: True
+test_step: 800
+bidirectional: False
+num_chords: 50
+chord_n: 3
