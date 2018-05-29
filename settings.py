@@ -1,5 +1,3 @@
-
-
 shifted = True
 
 shift_folder = ''
@@ -17,7 +15,8 @@ histo_folder1 = 'data/'  + 'histo' + subfolder
 tempo_folder2 = 'data/' + shift_folder + 'tempo' + subfolder
 shifted_folder = 'data/' + shift_folder + 'shifted' + subfolder
 pickle_folder = 'data/' + shift_folder + 'pianoroll' + subfolder
-roll_folder = 'data/' + shift_folder + 'indroll' + subfolder
+note_folder = 'data/' + shift_folder + 'notes' + subfolder
+ind_folder = 'data/' + shift_folder + 'indroll' + subfolder
 histo_folder2 = 'data/' + shift_folder + 'histo' + subfolder
 chords_folder = 'data/' + shift_folder + 'chords' + subfolder
 chords_index_folder = 'data/' + shift_folder + 'chord_index' + subfolder
@@ -44,6 +43,10 @@ index_dict_name = 'index_dict.pickle'
 if shifted:
     chord_dict_name = 'chord_dict_shifted.pickle'
     index_dict_name = 'index_dict_shifted.pickle'
+
+
+#number of LSTM layers in polyphonic generator
+num_poly_layers = 1
 
 
 # Specifies the method how to add the chord information to the input vector

@@ -34,7 +34,7 @@ from keras.backend.tensorflow_backend import set_session
 
 
 # Path to the fully trained chord model for the chord embeddings:
-chord_model_path = 'models/chords/1527396952-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/model_Epoch20.pickle'
+chord_model_path = 'models/chords/1527592682-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/model_epoch20.pickle'
 # Path where the polyphonic models are saved:
 model_path = 'models/chords_mldy/'
 model_filetype = '.pickle'
@@ -70,7 +70,7 @@ if not os.path.exists(model_path):
 
 print('loading data...')
 # Get Train and test sets
-train_set, test_set, chord_train_set, chord_test_set = data_class.get_ind_train_and_test_set(train_set_size, test_set_size)
+train_set, test_set, chord_train_set, chord_test_set = data_class.get_note_train_and_test_set(train_set_size, test_set_size)
 
 if chord_embed_method == 'embed':
     chord_dim = chord_embedding_dim
@@ -91,10 +91,15 @@ chord_embed_model = chord_model.Embed_Chord_Model(chord_model_path)
 print('creating model...')
 model = Sequential()
 # model.add(LSTM(lstm_size, batch_size=batch_size, input_shape=(step_size, new_num_notes+chord_dim+counter_size), stateful=True))
-#need to change this line - change shape to match the new input representation
-model.add(LSTM(lstm_size,  batch_input_shape=(batch_size,step_size, new_num_notes+chord_dim+counter_size), stateful=True))
 
-model.add(Dense(new_num_notes))
+#support for adding multiple LSTM layers -DDJZ
+for l in range(num_poly_layers):
+    model.add(LSTM(lstm_size,  batch_input_shape=(batch_size, step_size, new_num_notes+chord_dim+counter_size, 2), stateful=True))
+
+note_dense = Dense(new_num_notes, activation='sigmoid', name='note_dense')
+volume_dense = Dense(new_num_notes, name='volume_dense')
+
+model.add(Keras.Lambda(lambda x : tf.stack([note_dense(x), volume_dense(x)], axis = -1)))
 #removed sigmoid activation so volumes will not be probabilities but just values - DDJZ
 #model.add(Activation('sigmoid'))
 if optimizer == 'RMS': optimizer = RMSprop(lr=learning_rate)
@@ -109,7 +114,6 @@ total_train_loss_array = []
 total_test_loss = 0
 total_train_loss = 0
 
-
 # Test function
 def test():
     print('\nTesting:')
@@ -117,7 +121,10 @@ def test():
 
     bar = progressbar.ProgressBar(maxval=test_set_size, redirect_stdout=False)
     for i, test_song in enumerate(test_set):
-        X_test, Y_test = make_feature_vector(test_song, chord_test_set[i], chord_embed_method)
+        X = np.zeros(test_song.shape)
+        Y = np.zeros(test_song.shape)
+        X_test[:, :, :, 0], Y_test[:, :, :, 0] = make_feature_vector(test_song[:, :, :, 0], chord_test_set[i], chord_embed_method)
+        X_test[:, :, :, 1], Y_test[:, :, :, 1] = make_feature_vector(test_song[:, :, :, 1], chord_test_set[i], chord_embed_method)
 
         loss = model.evaluate(X_test, Y_test, batch_size=batch_size, verbose=verbose)
         model.reset_states()
@@ -191,10 +198,10 @@ def make_feature_vector(song, chords, chord_embed_method):
     
     if  next_chord_feature:
 #        X = np.array(data_class.make_one_hot_note_vector(song[:(((len(chords)-1)*fs*2)-1)], num_notes))
-        X = song.T[:(((len(chords)-1)*fs*2)-1)]
+        X = song[:(((len(chords)-1)*fs*2)-1)]
     else:
 #        X = np.array(data_class.make_one_hot_note_vector(song[:((len(chords)*fs*2)-1)], num_notes))
-        X = song.T[:((len(chords)*fs*2)-1)]
+        X = song[:((len(chords)*fs*2)-1)]
 #    print(X.shape)
     X = X[:,low_crop:high_crop]
     if chord_embed_method == 'embed':
@@ -251,7 +258,6 @@ with open(model_path + 'params.txt', "w") as text_file:
     text_file.write("num_chords: %s" % num_chords + '\n')
     text_file.write("chord_n: %s" % chord_n + '\n')
 
-
 # Train model
 print('training model...')
 for e in range(1, epochs+1):
@@ -269,7 +275,10 @@ for e in range(1, epochs+1):
     
     # Train model with each song seperatly
     for i, song in enumerate(train_set):
-        X, Y = make_feature_vector(song, chord_train_set[i], chord_embed_method)
+        X = np.zeros(song.shape)
+        Y = np.zeros(song.shape)
+        X[:, :, :, 0], Y[:, :, :, 0] = make_feature_vector(song[:, :, :,0], chord_test_set[i], chord_embed_method)
+        X[:, :, :, 1], Y[:, :, :, 1] = make_feature_vector(song[:, :, :, 1], chord_test_set[i], chord_embed_method)
         hist = model.fit(X, Y, batch_size=batch_size, shuffle=False, verbose=verbose)
         model.reset_states()
         bar.update(i)

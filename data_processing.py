@@ -257,7 +257,21 @@ def pianoroll_folder(tempo_folder,pickle_folder):
 #                invalid_files_counter +=1
 
 # change - DDJZ
-def note_ind_folder(tempo_folder,roll_folder):
+def notes_folder(tempo_folder,note_folder):
+    for path, subdirs, files in os.walk(tempo_folder):
+        for name in files:
+            _path = path.replace('\\', '/') + '/'
+            _name = name.replace('\\', '/')
+            target_path = roll_folder+_path[len(tempo_folder):]
+            if not os.path.exists(target_path):
+                os.makedirs(target_path)
+            try:
+                mf.save_note(_name, _path, target_path, fs) #change - DDJZ
+            except (ValueError, EOFError, IndexError, OSError, KeyError, ZeroDivisionError) as e:
+                exception_str = 'Unexpected error in ' + name  + ':\n', e, sys.exc_info()[0]
+                print(exception_str)
+#                invalid_files_counter +=1
+def note_ind_folder(tempo_folder,ind_folder):
     for path, subdirs, files in os.walk(tempo_folder):
         for name in files:
             _path = path.replace('\\', '/') + '/'
@@ -288,7 +302,6 @@ def change_tempo_folder(source_folder,tempo_folder):
 #                invalid_files_counter +=1
 
 def do_all_steps():
-    
 
     print('changing Tempo')
     change_tempo_folder(source_folder,tempo_folder1) #no need to change -DDJZ
@@ -304,11 +317,11 @@ def do_all_steps():
     
     #sequence of sets of notes, i.e. if notes 1, 3, 5 are on at time 0, we'd have [[1,3,5],...] no velocity!-DDJZ
     print('making note indexes')
-    note_ind_folder(tempo_folder2,roll_folder) 
+    note_ind_folder(tempo_folder2,ind_folder) 
 
     # to save velocities- DDJZ
-    print('making velocity vectors')
-    pianoroll_folder(tempo_folder2,velocity_folder)
+    print('making note vectors')
+    notes_folder(tempo_folder2,notes_folder)
     
     print('histogramming')
     save_histo_oct_from_midi_folder(tempo_folder2,histo_folder2) # already changed from above - DDJZ

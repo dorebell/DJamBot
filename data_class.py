@@ -1,4 +1,4 @@
-S# Author: Jonas Wiesendanger wjonas@student.ethz.ch
+# Author: Jonas Wiesendanger wjonas@student.ethz.ch
 from settings import *
 import numpy as np
 import _pickle as pickle
@@ -12,23 +12,22 @@ def get_chord_train_and_test_set(train_set_size, test_set_size):
     test_set = data[train_set_size:train_set_size+test_set_size]
     return train_set, test_set
 
-#need to change this function - 
-def get_ind_train_and_test_set(train_set_size, test_set_size):
-    data, chord_data = make_ind_data_set()
+def get_note_train_and_test_set(train_set_size, test_set_size):
+    data, chord_data = make_note_data_set()
     train_set = data[:train_set_size]
     test_set = data[train_set_size:train_set_size+test_set_size]
     chord_train_set = chord_data[:train_set_size]
     chord_test_set = chord_data[train_set_size:train_set_size+test_set_size]
     return train_set, test_set, chord_train_set, chord_test_set 
 
-
+#unused -DDJZ
 def get_train_and_test_set(train_set_size, test_set_size):
     data = make_data_set()
     train_set = data[:train_set_size]
     test_set = data[train_set_size:train_set_size+test_set_size]
     return train_set, test_set
 
-
+#unused -DDJZ
 def make_data_sets(train_set_size, test_set_size):
     data = make_data_set()
     X_train = []
@@ -70,6 +69,7 @@ def make_data_sets(train_set_size, test_set_size):
     return X_train, Y_train, X_test, Y_test
 
 
+#unused -DDJZ
 def make_data_location_list():
     data = []
     for path, subdirs, files in os.walk(chords_index_folder):
@@ -80,6 +80,7 @@ def make_data_location_list():
             data.append(song)
     return data
 
+#unused - DDJZ
 def load_data_set(data_string):
     data = []
     for path in data_string:
@@ -87,7 +88,7 @@ def load_data_set(data_string):
         data.append(song)
     return data
 
-
+#unused - DDJZ
 def make_chord_data_set():
     data = []
     for path, subdirs, files in os.walk(chords_index_folder):
@@ -98,7 +99,7 @@ def make_chord_data_set():
             data.append(song)
     return data
 
-
+#unused - DDJZ
 def make_data_set():
     data = []
     for path, subdirs, files in os.walk(tempo_folder):
@@ -125,20 +126,21 @@ def make_ind_data_set():
             chord_data.append(song_chords)
     return data, chord_data
 '''
-
-def make_ind_data_set():
+#gets note indices
+def make_note_data_set():
     data = []
     chord_data = []
-    for path, subdirs, files in os.walk(pickle_folder):
+    for path, subdirs, files in os.walk(note_folder):
         for name in files:
             _path = path.replace('\\', '/') + '/'
             _name = name.replace('\\', '/')
             song = pickle.load(open(_path + _name, 'rb'))
-            _chord_path = _path.replace('pianoroll', 'chord_index')
+            _chord_path = _path.replace('indroll', 'chord_index')
             song_chords = pickle.load(open(_chord_path + _name, 'rb'))
             data.append(song)
             chord_data.append(song_chords)
     return data, chord_data
+
 
 def make_one_hot_vector(song, num_chords):
     onehot_song = []
