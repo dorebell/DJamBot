@@ -291,10 +291,10 @@ def do_all_steps():
     
 
     print('changing Tempo')
-    change_tempo_folder(source_folder,tempo_folder1) 
+    change_tempo_folder(source_folder,tempo_folder1) #no need to change -DDJZ
     
     print('histogramming')
-    save_histo_oct_from_midi_folder(tempo_folder1,histo_folder1) # contains changeable material - DDJZ # changed - DDJZ
+    save_histo_oct_from_midi_folder(tempo_folder1,histo_folder1) #no need to change - DDJZ
 
     print('make song histo')
     save_song_histo_from_histo(histo_folder1,song_histo_folder) # no need to change - DDJZ
@@ -302,13 +302,13 @@ def do_all_steps():
     print('shifting midi files')
     shift_midi_files(song_histo_folder,tempo_folder1,tempo_folder2) # no need to change - DDJZ
     
-
+    #sequence of sets of notes, i.e. if notes 1, 3, 5 are on at time 0, we'd have [[1,3,5],...] no velocity!-DDJZ
     print('making note indexes')
-    note_ind_folder(tempo_folder2,roll_folder) # contains changeable material - DDJZ # changed - DDJZ
+    note_ind_folder(tempo_folder2,roll_folder) 
 
-    # to save pianorolls - DDJZ
-    print('making pianorolls')
-    pianoroll_folder(tempo_folder2, pickle_folder)
+    # to save velocities- DDJZ
+    print('making velocity vectors')
+    pianoroll_folder(tempo_folder2,velocity_folder)
     
     print('histogramming')
     save_histo_oct_from_midi_folder(tempo_folder2,histo_folder2) # already changed from above - DDJZ
