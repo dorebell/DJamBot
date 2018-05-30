@@ -34,12 +34,12 @@ from keras.backend.tensorflow_backend import set_session
 
 
 # Path to the fully trained chord model for the chord embeddings:
-chord_model_path = 'models/chords/1527592615-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/model_epoch20.pickle'
+chord_model_path = 'models/chords/1527644920-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/model_epoch20.pickle'
 # Path where the polyphonic models are saved:
 model_path = 'models/chords_mldy/'
 model_filetype = '.pickle'
 
-##are we only training on 5 examples????? --DJZ
+##are we only training on 5 examples????? --DDJZ
 epochs = 20 # 100
 train_set_size = 4
 test_set_size = 1

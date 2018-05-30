@@ -218,12 +218,15 @@ def save_notes(name, path, target_path, fs):
     else:
         p = mid.get_piano_roll(fs=fs)
     n = p
-    v = p
+    v = np.array(p)
     for i, _ in enumerate(p):
         for j, _ in enumerate(p[i]):
             if p[i,j] != 0:
                 n[i,j] = 1
-    n = mf.pianoroll_to_note_index(n)
+    print("AAAAAAAA")
+    n = np.array(mf.pianoroll_to_note_index(n))
+    print("n shape = ", n.shape)
+    print("v shape = ", v.shape) 
     note = np.append(np.array(n), np.array(v), axis = -1)
     pickle.dump(note, open(target_path + name + '.pickle'), 'wb')
 

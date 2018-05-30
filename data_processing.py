@@ -262,21 +262,22 @@ def notes_folder(tempo_folder,note_folder):
         for name in files:
             _path = path.replace('\\', '/') + '/'
             _name = name.replace('\\', '/')
-            target_path = roll_folder+_path[len(tempo_folder):]
+            target_path = note_folder+_path[len(tempo_folder):]
             if not os.path.exists(target_path):
                 os.makedirs(target_path)
-            try:
-                mf.save_note(_name, _path, target_path, fs) #change - DDJZ
-            except (ValueError, EOFError, IndexError, OSError, KeyError, ZeroDivisionError) as e:
-                exception_str = 'Unexpected error in ' + name  + ':\n', e, sys.exc_info()[0]
-                print(exception_str)
+            mf.save_notes(_name, _path, target_path, fs)
+            # try:
+            #     mf.save_notes(_name, _path, target_path, fs) #change - DDJZ
+            # except (ValueError, EOFError, IndexError, OSError, KeyError, ZeroDivisionError) as e:
+            #     exception_str = 'Unexpected error in ' + name  + ':\n', e, sys.exc_info()[0]
+            #     print(exception_str)
 #                invalid_files_counter +=1
 def note_ind_folder(tempo_folder,ind_folder):
     for path, subdirs, files in os.walk(tempo_folder):
         for name in files:
             _path = path.replace('\\', '/') + '/'
             _name = name.replace('\\', '/')
-            target_path = roll_folder+_path[len(tempo_folder):]
+            target_path = ind_folder+_path[len(tempo_folder):]
             if not os.path.exists(target_path):
                 os.makedirs(target_path)
             try:

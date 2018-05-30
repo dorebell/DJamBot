@@ -14,7 +14,7 @@ histo_folder1 = 'data/'  + 'histo' + subfolder
 
 tempo_folder2 = 'data/' + shift_folder + 'tempo' + subfolder
 shifted_folder = 'data/' + shift_folder + 'shifted' + subfolder
-pickle_folder = 'data/' + shift_folder + 'pianoroll' + subfolder
+#pickle_folder = 'data/' + shift_folder + 'pianoroll' + subfolder
 note_folder = 'data/' + shift_folder + 'notes' + subfolder
 ind_folder = 'data/' + shift_folder + 'indroll' + subfolder
 histo_folder2 = 'data/' + shift_folder + 'histo' + subfolder
