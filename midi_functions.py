@@ -223,8 +223,8 @@ def save_notes(name, path, target_path, fs):
         for j, _ in enumerate(p[i]):
             if p[i,j] != 0:
                 n[i,j] = 1
-    note = np.append(np.array(n), np.array(v), axis = -1)
-    pickle.dump(note, open(target_path + name + '.pickle'), 'wb')
+    note = np.stack([np.array(n).T, np.array(v).T], axis = -1)
+    pickle.dump(note, open(target_path + name + '.pickle', 'wb'))
 
 
 

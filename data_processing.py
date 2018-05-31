@@ -265,12 +265,11 @@ def notes_folder(tempo_folder,note_folder):
             target_path = note_folder+_path[len(tempo_folder):]
             if not os.path.exists(target_path):
                 os.makedirs(target_path)
-            mf.save_notes(_name, _path, target_path, fs)
-            # try:
-            #     mf.save_notes(_name, _path, target_path, fs) #change - DDJZ
-            # except (ValueError, EOFError, IndexError, OSError, KeyError, ZeroDivisionError) as e:
-            #     exception_str = 'Unexpected error in ' + name  + ':\n', e, sys.exc_info()[0]
-            #     print(exception_str)
+            try:
+                mf.save_notes(_name, _path, target_path, fs) #change - DDJZ
+            except (ValueError, EOFError, IndexError, OSError, KeyError, ZeroDivisionError) as e:
+                exception_str = 'Unexpected error in ' + name  + ':\n', e, sys.exc_info()[0]
+                print(exception_str)
 #                invalid_files_counter +=1
 def note_ind_folder(tempo_folder,ind_folder):
     for path, subdirs, files in os.walk(tempo_folder):
@@ -317,8 +316,8 @@ def do_all_steps():
     shift_midi_files(song_histo_folder,tempo_folder1,tempo_folder2) # no need to change - DDJZ
     
     #sequence of sets of notes, i.e. if notes 1, 3, 5 are on at time 0, we'd have [[1,3,5],...] no velocity!-DDJZ
-    print('making note indexes')
-    note_ind_folder(tempo_folder2,ind_folder) 
+    #print('making note indexes')
+    #note_ind_folder(tempo_folder2,ind_folder) 
 
     # to save velocities- DDJZ
     print('making note vectors')

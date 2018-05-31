@@ -34,7 +34,7 @@ from keras.backend.tensorflow_backend import set_session
 
 
 # Path to the fully trained chord model for the chord embeddings:
-chord_model_path = 'models/chords/1527644920-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/model_epoch20.pickle'
+chord_model_path = 'models/chords/1527777559-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/model_epoch20.pickle'
 # Path where the polyphonic models are saved:
 model_path = 'models/chords_mldy/'
 model_filetype = '.pickle'
@@ -94,8 +94,7 @@ model = Sequential()
 
 #support for adding multiple LSTM layers -DDJZ
 for l in range(num_poly_layers):
-    ##THIS IS WRONG AND NEEDS TO BE FIXED - I think Keras only supports LSTMs with 3 input dimensions, so some serious change is necessary.
-    model.add(LSTM(lstm_size,  batch_input_shape=(batch_size, step_size, (new_num_notes+chord_dim+counter_size)*2), stateful=True))
+    model.add(LSTM(lstm_size,  batch_input_shape=(batch_size, step_size, (new_num_notes*2)+chord_dim+counter_size), stateful=True))
 
 note_dense = Dense(new_num_notes, activation='sigmoid', name='note_dense')
 volume_dense = Dense(new_num_notes, name='volume_dense')
@@ -122,11 +121,7 @@ def test():
 
     bar = progressbar.ProgressBar(maxval=test_set_size, redirect_stdout=False)
     for i, test_song in enumerate(test_set):
-        X = np.zeros(test_song.shape)
-        Y = np.zeros(test_song.shape)
-        X_test[:, :, :, 0], Y_test[:, :, :, 0] = make_feature_vector(test_song[:, :, :, 0], chord_test_set[i], chord_embed_method)
-        X_test[:, :, :, 1], Y_test[:, :, :, 1] = make_feature_vector(test_song[:, :, :, 1], chord_test_set[i], chord_embed_method)
-
+        X_test, Y_test = make_feature_vector(test_song, chord_test_set[i], chord_embed_method)
         loss = model.evaluate(X_test, Y_test, batch_size=batch_size, verbose=verbose)
         model.reset_states()
         total_test_loss += loss
@@ -196,7 +191,6 @@ def make_feature_vector(song, chords, chord_embed_method):
 
 #changed; now song is assumed to be of type pianoroll - DDJZ
 def make_feature_vector(song, chords, chord_embed_method):
-    
     if  next_chord_feature:
 #        X = np.array(data_class.make_one_hot_note_vector(song[:(((len(chords)-1)*fs*2)-1)], num_notes))
         X = song[:(((len(chords)-1)*fs*2)-1)]
@@ -205,6 +199,7 @@ def make_feature_vector(song, chords, chord_embed_method):
         X = song[:((len(chords)*fs*2)-1)]
 #    print(X.shape)
     X = X[:,low_crop:high_crop]
+    X = np.reshape(X, (X.shape[0], -1))
     if chord_embed_method == 'embed':
         X_chords = list(chord_embed_model.embed_chords_song(chords))
     elif chord_embed_method == 'onehot':
@@ -229,8 +224,6 @@ def make_feature_vector(song, chords, chord_embed_method):
     X_chords_new = np.array(X_chords_new)
    
     X = np.append(X, X_chords_new, axis=1)
-    
-        
     
     if counter_feature:
         counter = [[0,0,0],[0,0,1],[0,1,0],[0,1,1],[1,0,0],[1,0,1],[1,1,0],[1,1,1]]
@@ -274,12 +267,11 @@ for e in range(1, epochs+1):
 
     bar = progressbar.ProgressBar(maxval=train_set_size)
     
-    # Train model with each song seperatly
+    # Train model with each song separately
     for i, song in enumerate(train_set):
         X = np.zeros(song.shape)
         Y = np.zeros(song.shape)
-        X[:, :, :, 0], Y[:, :, :, 0] = make_feature_vector(song[:, :, :,0], chord_test_set[i], chord_embed_method)
-        X[:, :, :, 1], Y[:, :, :, 1] = make_feature_vector(song[:, :, :, 1], chord_test_set[i], chord_embed_method)
+        X, Y = make_feature_vector(song, chord_test_set[i], chord_embed_method)
         hist = model.fit(X, Y, batch_size=batch_size, shuffle=False, verbose=verbose)
         model.reset_states()
         bar.update(i)
