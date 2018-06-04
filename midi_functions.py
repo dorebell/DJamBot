@@ -295,12 +295,20 @@ def pianoroll_to_midi_continous(pianoroll, midi_folder, filename, instrument_nam
         #t_note means 'tracker note'
         for t_note in tracker:
             note, v = t_note
+            '''if note > 127:
+                print('warning: note > 127')
+            if note < 0:
+                print('warning: note < 0')
+            if v > 127:
+                print('warning: v>127')
+            if v < 0:
+                print('warning: v<0')'''
             if note in notes and (i)%8 is not 0:
 #                print('removing', note, 'from notes')
                 notes.remove(note)
             else:
                 #midi_note = pm.Note(velocity=80, pitch=note, start=(60/(2*bpm))*start_times[note], end=(60/(2*bpm))*i)
-                midi_note = pm.Note(velocity=80*v, pitch=note, start=(60/(2*bpm))*start_times[note], end=(60/(2*bpm))*i)
+                midi_note = pm.Note(velocity=v, pitch=note, start=(60/(2*bpm))*start_times[note], end=(60/(2*bpm))*i)
                 # will change velocity once output format is correct - DDJZ
                 piano.notes.append(midi_note)
 #                print('removing', note, 'from tracker')

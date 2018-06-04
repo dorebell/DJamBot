@@ -1,5 +1,16 @@
 Version Updates
 
+v.0.1.1 - 06/03/18
+A few changes:
+- changed the model syntax in polyphonic_lstm_training.py to functional API
+- changed generation.py to handle the new model outputs (probs/vels)
+changes to consider:
+- cost function: currently loss is mean squared on *both probabilities and velocities*
+- maybe there's a better way to unpack the model output array (length 2*new_num_notes) into the probs and vels arrays (length new_num_notes for both)
+
+v.0.1.0 - 05/31/18
+- changed models to produce probabilities and velocities
+
 v.0.0.2 - 05/26/18
 - mostly done accommodating pianoroll data type
   - model inputs are now pianoroll files (i.e. arrays where nonzero entries are not necessarily 1)

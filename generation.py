@@ -10,23 +10,25 @@ import chord_model
 import midi_functions as mf
 import data_class
 
+import tensorflow as tf
 
 
 
-chord_model_folder = 'models/chords/1527396952-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/'
+
+chord_model_folder = 'models/chords/1527777559-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/'
 chord_model_name = 'model_Epoch20.pickle'
 
 melody_model_folder = 'models/chords_mldy/Shifted_True_NextChord_True_ChordEmbed_embed_Counter_True_Highcrop_84_Lowcrop_24_Lr_1e-06_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1/'
-melody_model_name = 'modelEpoch20.pickle'
+melody_model_name = 'modelEpoch10.pickle'
 
 midi_save_folder = 'predicted_midi/'
 
 # changed seed_path to be pianoroll folder
 #seed_path = 'data/' + shift_folder + 'indroll/'
-seed_path = pickle_folder
+seed_path = note_folder
 seed_chord_path = 'data/' + shift_folder + 'chord_index/'
 
-seed_name = 'rufus.mid.pickle'
+seed_name = 'decisive.mid.pickle'
 
 
 # Parameters for song generation:
@@ -75,6 +77,18 @@ def ind_to_onehot(ind):
             onehot[i,note]=1
     return onehot
 
+def notes_from_model(output):
+    probs = output[0,:new_num_notes]
+    vels = output[0, new_num_notes: 2*new_num_notes]
+    # this is just a makeshift way to produce reasonable velocities; please change once better velocity generation is possible - DDJZ
+    vels = 60*(vels + 1)
+    vels = vels.astype(int) # to convert to int velocities, as required by MIDI
+    vels = np.maximum(vels, 0) # because velocities are floored at 0
+    vels = np.minimum(vels, 127) # because velocities are capped at 127
+    notes = sample_probability_vector(probs)*vels
+    return probs, vels, notes
+
+
 #sd = pickle.load(open(seed_path+seed_name, 'rb'))[:8*seed_length]
 sd = pickle.load(open(seed_path+seed_name, 'rb'))
 
@@ -82,7 +96,8 @@ seed_chords = pickle.load(open(seed_chord_path+seed_name, 'rb'))[:seed_length]
 
 #changed - DDJZ
 #seed = ind_to_onehot(sd)[:,low_crop:high_crop]
-seed = sd.T[:8*seed_length, low_crop:high_crop]
+seed = sd[:8*seed_length, low_crop:high_crop]
+seed = np.reshape(seed, (seed.shape[0],-1))
 
 print('loading polyphonic model ...')
 melody_model = load_model(melody_model_folder+melody_model_name)
@@ -139,23 +154,22 @@ next_step = None
 for step in seed:
     
     next_step = melody_model.predict(step)
-    
-probs = next_step[0, :, 0]
-vels =  next_step[0, :, 1] 
-notes = sample_probability_vector(probs)*vels
-notes = np.reshape(notes, (notes.shape[0], -1, 2))
+
+  
+probs, vels, notes = notes_from_model(next_step)
+#notes = np.reshape(notes, (notes.shape[0], -1, 2))
 
 
 rest = []
-rest.append(probs)
+rest.append(notes)
 
 
 for chord in chords[seed.shape[0]:]:
-    next_input = np.append(probs, chord, axis=0)
+    next_input = np.concatenate((probs, vels, chord), axis=0)
     next_input = np.reshape(next_input, (1, 1, next_input.shape[0]))
     next_step = melody_model.predict(next_input)
-    notes = sample_probability_vector(next_step[0])
-    rest.append(probs)
+    probs, vels, notes = notes_from_model(next_step)
+    rest.append(notes)
 
 rest = np.array(rest)
 rest = np.pad(rest, ((0,0),(low_crop,num_notes-high_crop)), mode='constant', constant_values=0)
@@ -164,7 +178,9 @@ ind = np.nonzero(rest)
 #note_ind = mf.pianoroll_to_note_index(rest)
 #print(ch_model.song)
 
-#test
+
+if not os.path.exists(midi_save_folder):
+    os.makedirs(midi_save_folder)
 pickle.dump(rest.T,open(midi_save_folder+'output_pianoroll.pickle', 'wb'))
 
 instrument_names = ['Electric Guitar (jazz)', 'Acoustic Grand Piano',
