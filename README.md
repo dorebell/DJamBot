@@ -2,7 +2,7 @@
 
 This repository is under construction. Forked from https://github.com/brunnergino/JamBot, with the intetion of adding dynamics.
 
-Current version: 0.1.0
+Current version: 0.1.1
 
 ## Paper
 
