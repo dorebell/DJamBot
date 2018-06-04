@@ -12,13 +12,14 @@ import data_class
 
 import tensorflow as tf
 
+#import keras.backend as K
 
-
+from polyphonic_lstm_training import weighted_square_error
 
 chord_model_folder = 'models/chords/1527777559-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/'
 chord_model_name = 'model_Epoch20.pickle'
 
-melody_model_folder = 'models/chords_mldy/Shifted_True_NextChord_True_ChordEmbed_embed_Counter_True_Highcrop_84_Lowcrop_24_Lr_1e-06_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1/'
+melody_model_folder = 'models/chords_mldy/Shifted_True_NextChord_True_ChordEmbed_embed_Counter_True_Highcrop_84_Lowcrop_24_Lr_1e-06_opt_Adam_bi_False_lstmsize_512_trainsize_10_testsize_4/'
 melody_model_name = 'modelEpoch10.pickle'
 
 midi_save_folder = 'predicted_midi/'
@@ -45,7 +46,16 @@ seed_length = 4
 #pred_song_length = 8*16-seed_length
 
 
-
+'''def weighted_square_error(y_true, y_pred):
+    prob_true = y_true[:new_num_notes]
+    prob_pred = y_pred[:new_num_notes]
+    vel_true = y_true[new_num_notes: 2*new_num_notes]
+    vel_pred = y_pred[new_num_notes: 2*new_num_notes]
+    ce = K.categorical_crossentropy(prob_true, prob_pred)
+    notes_true = prob_true * vel_true
+    notes_pred = prob_true * vel_pred
+    mse = K.mean(K.square(notes_pred - notes_true), axis=-1)
+    return ce+mse'''
 
 
 
@@ -80,6 +90,7 @@ def ind_to_onehot(ind):
 def notes_from_model(output):
     probs = output[0,:new_num_notes]
     vels = output[0, new_num_notes: 2*new_num_notes]
+    print(vels)
     # this is just a makeshift way to produce reasonable velocities; please change once better velocity generation is possible - DDJZ
     vels = 60*(vels + 1)
     vels = vels.astype(int) # to convert to int velocities, as required by MIDI
@@ -100,7 +111,7 @@ seed = sd[:8*seed_length, low_crop:high_crop]
 seed = np.reshape(seed, (seed.shape[0],-1))
 
 print('loading polyphonic model ...')
-melody_model = load_model(melody_model_folder+melody_model_name)
+melody_model = load_model(melody_model_folder+melody_model_name, custom_objects = {'weighted_square_error' : weighted_square_error})
 melody_model.reset_states()
 
 ch_model = chord_model.Chord_Model(
