@@ -119,7 +119,7 @@ def train():
         print('Epoch ', e, 'of ', epochs, 'Epochs\nTraining:')
         if shuffle_train_set:
             shuffle(train_set)
-        bar = progressbar.ProgressBar(maxval=train_set_size)
+        bar = progressbar.ProgressBar(maxval=len(train_set))
         for i, song in enumerate(train_set):
             # bar.start()
             X = song[:-1]
