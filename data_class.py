@@ -14,10 +14,10 @@ def get_chord_train_and_test_set(train_set_size, test_set_size):
     test_set = data[num_train:]
     return train_set, test_set
 
-def get_note_train_and_test_set(train_set_size, test_set_size):
+def get_note_train_and_test_set(train_set_prop, test_set_prop):
     data, chord_data = make_note_data_set()
     num_songs = len(data)
-    num_train = int((len(data) * train_set_size)/(train_set_size + test_set_size))
+    num_train = int((len(data) * train_set_prop)/(train_set_prop + test_set_prop))
     train_set = data[:num_train]
     test_set = data[num_train:]
     chord_train_set = chord_data[:num_train]

@@ -123,16 +123,16 @@ def make_feature_vector(song, chords, chord_embed_method, chord_embed_model):
 
 def main():
     # Path to the fully trained chord model for the chord embeddings:
-    chord_model_path = 'models/chords/1528173811-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/model_epoch20.pickle'
+    chord_model_path = 'models/chords/1528173811-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/model_Epoch20.pickle'
     # Path where the polyphonic models are saved:
     model_path = 'models/chords_mldy/'
     model_filetype = '.pickle'
 
     ##are we only training on 5 examples????? --DDJZ
     epochs = 20 # 100
-    train_set_size = 10
-    test_set_size = 4
-    test_step = 2          # Calculate error for test set every this many songs
+    train_set_prop = 10
+    test_set_prop = 1
+    test_step = 100          # Calculate error for test set every this many songs
 
     verbose = False
     show_plot = False
@@ -147,20 +147,21 @@ def main():
     embedding = False
     optimizer = 'Adam'
 
+    print('loading data...')
+    # Get Train and test sets
+    train_set, test_set, chord_train_set, chord_test_set = data_class.get_note_train_and_test_set(train_set_prop, test_set_prop)
+    train_set_size = len(train_set)
+    test_set_size = len(test_set)
+
     fd = {'shifted': shifted, 'next_chord_feature': next_chord_feature, 'chord_embed_method': chord_embed_method, 'counter': counter_feature, 'highcrop': high_crop, 'lowcrop':low_crop, 'lr': learning_rate, 'opt': optimizer,
         'bi': bidirectional, 'lstms': lstm_size, 'trainsize': train_set_size, 'testsize': test_set_size}
-
+    
     model_name = 'Shifted_%(shifted)s_NextChord_%(next_chord_feature)s_ChordEmbed_%(chord_embed_method)s_Counter_%(counter)s_Highcrop_%(highcrop)s_Lowcrop_%(lowcrop)s_Lr_%(lr)s_opt_%(opt)s_bi_%(bi)s_lstmsize_%(lstms)s_trainsize_%(trainsize)s_testsize_%(testsize)s' % fd
 
     model_path = model_path + model_name + '/'
     if not os.path.exists(model_path):
         os.makedirs(model_path) 
-
-
-    print('loading data...')
-    # Get Train and test sets
-    train_set, test_set, chord_train_set, chord_test_set = data_class.get_note_train_and_test_set(train_set_size, test_set_size)
-
+    
     if chord_embed_method == 'embed':
         chord_dim = chord_embedding_dim
     elif chord_embed_method == 'onehot':
@@ -308,8 +309,6 @@ def main():
             X = np.zeros(song.shape)
             Y = np.zeros(song.shape)
             X, Y = make_feature_vector(song, chord_train_set[i], chord_embed_method, chord_embed_model)
-            print(X.shape)
-            print(Y.shape)
             hist = model.fit(X, Y, batch_size=batch_size, shuffle=False, verbose=verbose)
             model.reset_states()
             bar.update(i)
@@ -317,7 +316,7 @@ def main():
             if (i+1)%test_step is 0:
                 total_train_loss = total_train_loss/test_step
                 total_train_loss_array.append(total_train_loss)
-                print(total_train_loss)
+                print('\nTotal train loss: ', total_train_loss)
                 #test()
                 #not the most elegant way to do this, but...
 
