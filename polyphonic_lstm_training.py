@@ -152,6 +152,8 @@ def main():
     train_set, test_set, chord_train_set, chord_test_set = data_class.get_note_train_and_test_set(train_set_prop, test_set_prop)
     train_set_size = len(train_set)
     test_set_size = len(test_set)
+    print('Training set size: ', train_set_size)
+    print('Test set size: ', test_set_size)
 
     fd = {'shifted': shifted, 'next_chord_feature': next_chord_feature, 'chord_embed_method': chord_embed_method, 'counter': counter_feature, 'highcrop': high_crop, 'lowcrop':low_crop, 'lr': learning_rate, 'opt': optimizer,
         'bi': bidirectional, 'lstms': lstm_size, 'trainsize': train_set_size, 'testsize': test_set_size}
