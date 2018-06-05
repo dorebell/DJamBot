@@ -33,22 +33,20 @@ from keras.backend.tensorflow_backend import set_session
 #set_session(tf.Session(config=config))
 
 def weighted_square_error(y_true, y_pred):
-    print(y_true.shape)
-    print(y_pred.shape)
-    prob_true = y_true[:new_num_notes]
-    print(prob_true)
-    prob_pred = y_pred[:new_num_notes]
-    print(prob_pred)
-    vel_true = y_true[new_num_notes: 2*new_num_notes]
-    print(vel_true)
-    vel_pred = y_pred[new_num_notes: 2*new_num_notes]
-    print(vel_pred)
+    prob_true = y_true[:, :new_num_notes]
+    #print("prob_true.shape", prob_true.shape)
+    prob_pred = y_pred[:, :new_num_notes]
+    #print("prob_pred.shape", prob_pred.shape)
+    vel_true = y_true[:, new_num_notes: 2*new_num_notes]
+    #print("vel_true.shape", vel_true.shape)
+    vel_pred = y_pred[:, new_num_notes: 2*new_num_notes]
+    #print("vel_pred.shape", vel_pred.shape)
     ce = losses.categorical_crossentropy(prob_true, prob_pred)
-    print(ce)
+    #print(ce)
     notes_true = tf.multiply(prob_true,vel_true)
     notes_pred = tf.multiply(prob_true,vel_pred)
     mse = losses.mean_squared_error(notes_true, notes_pred)
-    print(mse)
+    #print(mse)
     return ce+mse
 
 
@@ -125,7 +123,7 @@ def make_feature_vector(song, chords, chord_embed_method, chord_embed_model):
 
 def main():
     # Path to the fully trained chord model for the chord embeddings:
-    chord_model_path = 'models/chords/1527777559-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/model_epoch20.pickle'
+    chord_model_path = 'models/chords/1528173811-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/model_epoch20.pickle'
     # Path where the polyphonic models are saved:
     model_path = 'models/chords_mldy/'
     model_filetype = '.pickle'

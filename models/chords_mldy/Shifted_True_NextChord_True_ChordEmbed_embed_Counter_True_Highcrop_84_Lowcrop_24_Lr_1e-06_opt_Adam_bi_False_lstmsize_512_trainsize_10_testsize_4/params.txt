@@ -1,0 +1,12 @@
+Chord Model: models/chords/1528173811-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/model_epoch20.pickle
+epochs: 20
+train_set_size: 10
+test_set_size: 4
+lstm_size: 512
+learning_rate: 1e-06
+save_step: 1
+shuffle_train_set: True
+test_step: 2
+bidirectional: False
+num_chords: 50
+chord_n: 3

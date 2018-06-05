@@ -8,16 +8,20 @@ import midi_functions as mf
 
 def get_chord_train_and_test_set(train_set_size, test_set_size):
     data = make_chord_data_set()
-    train_set = data[:train_set_size]
-    test_set = data[train_set_size:train_set_size+test_set_size]
+    num_songs = len(data)
+    num_train = (len(data) * train_set_size)/(train_set_size + test_set_size)
+    train_set = data[:num_train]
+    test_set = data[num_train:]
     return train_set, test_set
 
 def get_note_train_and_test_set(train_set_size, test_set_size):
     data, chord_data = make_note_data_set()
-    train_set = data[:train_set_size]
-    test_set = data[train_set_size:train_set_size+test_set_size]
-    chord_train_set = chord_data[:train_set_size]
-    chord_test_set = chord_data[train_set_size:train_set_size+test_set_size]
+    num_songs = len(data)
+    num_train = (len(data) * train_set_size)/(train_set_size + test_set_size)
+    train_set = data[:num_train]
+    test_set = data[num_train:]
+    chord_train_set = chord_data[:num_train]
+    chord_test_set = chord_data[num_train:]
     return train_set, test_set, chord_train_set, chord_test_set
 
 #unused -DDJZ
