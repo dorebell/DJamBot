@@ -33,19 +33,19 @@ from keras.backend.tensorflow_backend import set_session
 model_path = 'models/chords/'
 model_filetype = '.pickle'
 
-epochs = 20
-train_set_size = 4
+epochs = 10 #20
+train_set_size = 9
 test_set_size = 1
-test_step = 800        # Calculate error for test set every this many songs
+test_step = 150        # Calculate error for test set every this many songs
 
 verbose = False
 show_plot = False
 save_plot = True
 lstm_size = 512
 batch_size = 1
-learning_rate = 0.00001
+learning_rate = 0.00005
 step_size = 1
-save_step = 10
+save_step = 5
 shuffle_train_set = True
 bidirectional = False
 optimizer = 'Adam'
@@ -90,7 +90,7 @@ def test():
     print('\nTesting:')
     total_test_loss = 0
 
-    bar = progressbar.ProgressBar(maxval=test_set_size, redirect_stdout=False)
+    bar = progressbar.ProgressBar(maxval=len(test_set), redirect_stdout=False)
     for i, test_song in enumerate(test_set):
         X_test = test_song[:-1]
         Y_test = np_utils.to_categorical(test_song[1:], num_classes=num_chords)
@@ -98,8 +98,8 @@ def test():
         model.reset_states()
         total_test_loss += loss
         bar.update(i+1)
-    total_test_loss_array.append(total_test_loss/test_set_size)
-    print('\nTotal test loss: ', total_test_loss/test_set_size)
+    total_test_loss_array.append(total_test_loss/len(test_set))
+    print('\nTotal test loss: ', total_test_loss/len(test_set))
     print('-'*50)
     plt.plot(total_test_loss_array, 'b-', label='test loss')
     plt.plot(total_train_loss_array, 'r-', label='train loss')
@@ -132,6 +132,7 @@ def train():
             if (i+1)%test_step is 0:
                 total_train_loss = total_train_loss/test_step
                 total_train_loss_array.append(total_train_loss)
+                print('\nTotal training loss: ',total_train_loss)
                 test()
                 total_train_loss = 0
     

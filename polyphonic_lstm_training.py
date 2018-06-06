@@ -123,13 +123,13 @@ def make_feature_vector(song, chords, chord_embed_method, chord_embed_model):
 
 def main():
     # Path to the fully trained chord model for the chord embeddings:
-    chord_model_path = 'models/chords/1528173811-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/model_Epoch20.pickle'
+    chord_model_path = 'models/chords/1528249842-Shifted_True_Lr_5e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_9_testsize_1_samples_per_bar8/model_Epoch10.pickle'
     # Path where the polyphonic models are saved:
     model_path = 'models/chords_mldy/'
     model_filetype = '.pickle'
 
     ##are we only training on 5 examples????? --DDJZ
-    epochs = 20 # 100
+    epochs = 5 # 100
     train_set_prop = 10
     test_set_prop = 1
     test_step = 100          # Calculate error for test set every this many songs
@@ -139,7 +139,7 @@ def main():
     save_plot = True
     lstm_size = 512
     batch_size = 1
-    learning_rate = 1e-06
+    learning_rate = 1e-04
     step_size = 1
     save_step = 1
     shuffle_train_set = True

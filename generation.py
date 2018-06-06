@@ -16,11 +16,11 @@ import tensorflow as tf
 
 from polyphonic_lstm_training import weighted_square_error
 
-chord_model_folder = 'models/chords/1527777559-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/'
-chord_model_name = 'model_Epoch20.pickle'
+chord_model_folder = 'models/chords/1528249842-Shifted_True_Lr_5e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_9_testsize_1_samples_per_bar8/'
+chord_model_name = 'model_Epoch10.pickle'
 
-melody_model_folder = 'models/chords_mldy/Shifted_True_NextChord_True_ChordEmbed_embed_Counter_True_Highcrop_84_Lowcrop_24_Lr_1e-06_opt_Adam_bi_False_lstmsize_512_trainsize_10_testsize_4/'
-melody_model_name = 'modelEpoch10.pickle'
+melody_model_folder = 'models/chords_mldy/Shifted_True_NextChord_True_ChordEmbed_embed_Counter_True_Highcrop_84_Lowcrop_24_Lr_1e-06_opt_Adam_bi_False_lstmsize_512_trainsize_323_testsize_33/'
+melody_model_name = 'modelEpoch2.pickle'
 
 midi_save_folder = 'predicted_midi/'
 
@@ -29,7 +29,7 @@ midi_save_folder = 'predicted_midi/'
 seed_path = note_folder
 seed_chord_path = 'data/' + shift_folder + 'chord_index/'
 
-seed_name = 'decisive.mid.pickle'
+seed_name = 'DeTurk02.mid.pickle'
 
 
 # Parameters for song generation:
