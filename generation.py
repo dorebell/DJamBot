@@ -19,8 +19,8 @@ from polyphonic_lstm_training import weighted_square_error
 chord_model_folder = 'models/chords/1528249842-Shifted_True_Lr_5e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_9_testsize_1_samples_per_bar8/'
 chord_model_name = 'model_Epoch10.pickle'
 
-melody_model_folder = 'models/chords_mldy/Shifted_True_NextChord_True_ChordEmbed_embed_Counter_True_Highcrop_84_Lowcrop_24_Lr_1e-06_opt_Adam_bi_False_lstmsize_512_trainsize_323_testsize_33/'
-melody_model_name = 'modelEpoch2.pickle'
+melody_model_folder = 'models/chords_mldy/Shifted_True_NextChord_True_ChordEmbed_embed_Counter_True_Highcrop_84_Lowcrop_24_Lr_1e-05_opt_Adam_bi_False_lstmsize_512_trainsize_316_testsize_40/'
+melody_model_name = 'modelEpoch20.pickle'
 
 midi_save_folder = 'predicted_midi/'
 
@@ -89,14 +89,19 @@ def ind_to_onehot(ind):
 
 def notes_from_model(output):
     probs = output[0,:new_num_notes]
+    #print(probs)
+    print(np.sum(probs))
     vels = output[0, new_num_notes: 2*new_num_notes]
-    print(vels)
+    #print(vels)
     # this is just a makeshift way to produce reasonable velocities; please change once better velocity generation is possible - DDJZ
-    vels = 60*(vels + 1)
+    #vels = 40*(vels + 1.5)
+    # makesshift way number 2
+    vels = 3*vels
     vels = vels.astype(int) # to convert to int velocities, as required by MIDI
+    print(vels)
     vels = np.maximum(vels, 0) # because velocities are floored at 0
     vels = np.minimum(vels, 127) # because velocities are capped at 127
-    notes = sample_probability_vector(probs)*vels
+    notes = np.multiply(sample_probability_vector(probs), vels)
     return probs, vels, notes
 
 
@@ -166,7 +171,7 @@ for step in seed:
     
     next_step = melody_model.predict(step)
 
-  
+
 probs, vels, notes = notes_from_model(next_step)
 #notes = np.reshape(notes, (notes.shape[0], -1, 2))
 
@@ -185,6 +190,10 @@ for chord in chords[seed.shape[0]:]:
 rest = np.array(rest)
 rest = np.pad(rest, ((0,0),(low_crop,num_notes-high_crop)), mode='constant', constant_values=0)
 ind = np.nonzero(rest)
+
+'''for i,note in enumerate(rest):
+    print(i)
+    print(np.nonzero(note))'''
 #rest = np.reshape(rest, (rest.shape[1], rest.shape[0]))
 #note_ind = mf.pianoroll_to_note_index(rest)
 #print(ch_model.song)

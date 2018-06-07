@@ -20,7 +20,7 @@ import _pickle as pickle
 import data_class
 import chord_model
 
-from keras import losses
+#from keras import losses
 
 
 import tensorflow as tf
@@ -33,6 +33,10 @@ from keras.backend.tensorflow_backend import set_session
 #set_session(tf.Session(config=config))
 
 def weighted_square_error(y_true, y_pred):
+    
+    #mse factor
+    mse_factor = 1e-04
+    
     prob_true = y_true[:, :new_num_notes]
     #print("prob_true.shape", prob_true.shape)
     prob_pred = y_pred[:, :new_num_notes]
@@ -41,13 +45,14 @@ def weighted_square_error(y_true, y_pred):
     #print("vel_true.shape", vel_true.shape)
     vel_pred = y_pred[:, new_num_notes: 2*new_num_notes]
     #print("vel_pred.shape", vel_pred.shape)
-    ce = losses.categorical_crossentropy(prob_true, prob_pred)
+    ce = tf.losses.sigmoid_cross_entropy(prob_true, prob_pred)
     #print(ce)
-    notes_true = tf.multiply(prob_true,vel_true)
-    notes_pred = tf.multiply(prob_true,vel_pred)
-    mse = losses.mean_squared_error(notes_true, notes_pred)
-    #print(mse)
-    return ce+mse
+    #notes_true = tf.multiply(prob_true,vel_true)
+    #notes_pred = tf.multiply(prob_true,vel_pred)
+    vel_pair = tf.multiply(prob_true, vel_pred) + tf.multiply(1 - prob_true, vel_true) # model DeepJ's implementation
+    mse = tf.losses.mean_squared_error(vel_true, vel_pair)
+    cost = ce + mse_factor*mse
+    return cost
 
 
 # Test function
@@ -129,17 +134,17 @@ def main():
     model_filetype = '.pickle'
 
     ##are we only training on 5 examples????? --DDJZ
-    epochs = 5 # 100
-    train_set_prop = 10
+    epochs = 20 # 100
+    train_set_prop = 8
     test_set_prop = 1
-    test_step = 100          # Calculate error for test set every this many songs
+    test_step = 300          # Calculate error for test set every this many songs
 
     verbose = False
     show_plot = False
     save_plot = True
     lstm_size = 512
-    batch_size = 1
-    learning_rate = 1e-04
+    batch_size = 16
+    learning_rate = 1e-05
     step_size = 1
     save_step = 1
     shuffle_train_set = True
@@ -299,6 +304,7 @@ def main():
         
         # Shuffle training set order
         if shuffle_train_set:
+            print('Shuffling training set: ')
             # Zip lists together an shuffle and unzip again
             ziperoni = list(zip(train_set, chord_train_set))
             shuffle(ziperoni)
@@ -333,7 +339,6 @@ def main():
                     total_test_loss += loss
                     bar2.update(j)
                 total_test_loss_array.append(total_test_loss/test_set_size)
-                print(total_test_loss)
                 print('\nTotal test loss: ', total_test_loss/test_set_size)
                 print('-'*50)
                 plt.plot(total_test_loss_array, 'b-')
@@ -343,8 +348,6 @@ def main():
                 if save_plot: plt.savefig(model_path+'plot.png')
                 pickle.dump(total_test_loss_array,open(model_path+'total_test_loss_array.pickle', 'wb'))
                 pickle.dump(total_train_loss_array,open(model_path+'total_train_loss_array.pickle', 'wb'))
-
-
                 total_train_loss = 0
 
         if e%save_step is 0:
