@@ -65,6 +65,7 @@ def get_shift(scale):
 def shift_midi_files(song_histo_folder,tempo_folder,shifted_folder):
     for path, subdirs, files in os.walk(song_histo_folder):
         for name in files:
+            #print("Shifting ",name)
             _path = path.replace('\\', '/') + '/'
             _name = name.replace('\\', '/')
             tempo_path = tempo_folder+_path[len(song_histo_folder):]
@@ -74,10 +75,12 @@ def shift_midi_files(song_histo_folder,tempo_folder,shifted_folder):
             shift = get_shift(key)
             _name = _name[:-7]
             if shift != 'other':
+                #print("Trying to shift ",name)
                 if not os.path.exists(target_path):
                     os.makedirs(target_path)
                 try:
                     mf.shift_midi(shift, _name, tempo_path, target_path)
+                    print("Shifted ",name)
                 except (ValueError, EOFError, IndexError, OSError, KeyError, ZeroDivisionError) as e:
                     exception_str = 'Unexpected error in ' + name  + ':\n', e, sys.exc_info()[0]
                     print(exception_str)

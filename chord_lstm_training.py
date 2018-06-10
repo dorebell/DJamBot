@@ -33,10 +33,10 @@ from keras.backend.tensorflow_backend import set_session
 model_path = 'models/chords/'
 model_filetype = '.pickle'
 
-epochs = 10 #20
-train_set_size = 9
-test_set_size = 1
-test_step = 150        # Calculate error for test set every this many songs
+epochs = 25 #20
+train_set_prop = 1
+test_set_prop = 0
+test_step = 300        # Calculate error for test set every this many songs
 
 verbose = False
 show_plot = False
@@ -45,24 +45,28 @@ lstm_size = 512
 batch_size = 1
 learning_rate = 0.00005
 step_size = 1
-save_step = 5
+save_step = 2
 shuffle_train_set = True
 bidirectional = False
 optimizer = 'Adam'
 
+print('loading data...')
+train_set, test_set = data_class.get_chord_train_and_test_set(train_set_prop, test_set_prop)
+train_set_size = len(train_set)
+print('Training set size: ',train_set_size)
+test_set_size = len(test_set)
+print('Test set size: ',test_set_size)
+
 fd = {'shifted': shifted, 'lr': learning_rate, 'emdim': chord_embedding_dim, 'opt': optimizer,
 'bi': bidirectional, 'lstms': lstm_size, 'trainsize': train_set_size, 'testsize': test_set_size, 'samples_per_bar': samples_per_bar}
 t = str(int(round(time.time())))
-model_name = t+ '-Shifted_%(shifted)s_Lr_%(lr)s_EmDim_%(emdim)s_opt_%(opt)s_bi_%(bi)s_lstmsize_%(lstms)s_trainsize_%(trainsize)s_testsize_%(testsize)s_samples_per_bar%(samples_per_bar)s' % fd
+#model_name = t+ '-Shifted_%(shifted)s_Lr_%(lr)s_EmDim_%(emdim)s_opt_%(opt)s_bi_%(bi)s_lstmsize_%(lstms)s_trainsize_%(trainsize)s_testsize_%(testsize)s_samples_per_bar%(samples_per_bar)s' % fd
+model_name = 'overfitted_chords'
 
 model_path = model_path + model_name + '/'
 if not os.path.exists(model_path):
     os.makedirs(model_path) 
 
-
-
-print('loading data...')
-train_set, test_set = data_class.get_chord_train_and_test_set(train_set_size, test_set_size)
 print('creating model...')
 model = Sequential()
 model.add(Embedding(num_chords, chord_embedding_dim, input_length=step_size, name="embedding", batch_input_shape=(batch_size,step_size)))

@@ -16,20 +16,20 @@ import tensorflow as tf
 
 from polyphonic_lstm_training import weighted_square_error
 
-chord_model_folder = 'models/chords/1528249842-Shifted_True_Lr_5e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_9_testsize_1_samples_per_bar8/'
-chord_model_name = 'model_Epoch10.pickle'
+chord_model_folder = 'models/chords/1528360369-Shifted_True_Lr_5e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_324_testsize_36_samples_per_bar16/'
+chord_model_name = 'model_Epoch24.pickle'
 
-melody_model_folder = 'models/chords_mldy/Shifted_True_NextChord_True_ChordEmbed_embed_Counter_True_Highcrop_84_Lowcrop_24_Lr_1e-05_opt_Adam_bi_False_lstmsize_512_trainsize_316_testsize_40/'
-melody_model_name = 'modelEpoch20.pickle'
+melody_model_folder = 'models/chords_mldy/lstm_2_dropout_0.8_learning_rate_5e-06_lstm_size_256_bidir/'
+melody_model_name = 'modelEpoch10.pickle'
 
-midi_save_folder = 'predicted_midi/'
+midi_save_folder = 'predicted_midi/lstm_2_bidir/'
 
 # changed seed_path to be pianoroll folder
 #seed_path = 'data/' + shift_folder + 'indroll/'
 seed_path = note_folder
 seed_chord_path = 'data/' + shift_folder + 'chord_index/'
 
-seed_name = 'DeTurk02.mid.pickle'
+seed_name = 'Jia02.mid.pickle'
 
 
 # Parameters for song generation:
@@ -44,20 +44,6 @@ num_bars =64
 seed_length = 4
 
 #pred_song_length = 8*16-seed_length
-
-
-'''def weighted_square_error(y_true, y_pred):
-    prob_true = y_true[:new_num_notes]
-    prob_pred = y_pred[:new_num_notes]
-    vel_true = y_true[new_num_notes: 2*new_num_notes]
-    vel_pred = y_pred[new_num_notes: 2*new_num_notes]
-    ce = K.categorical_crossentropy(prob_true, prob_pred)
-    notes_true = prob_true * vel_true
-    notes_pred = prob_true * vel_pred
-    mse = K.mean(K.square(notes_pred - notes_true), axis=-1)
-    return ce+mse'''
-
-
 
 
 with_seed = True
@@ -90,17 +76,20 @@ def ind_to_onehot(ind):
 def notes_from_model(output):
     probs = output[0,:new_num_notes]
     #print(probs)
-    print(np.sum(probs))
+    print("sum of probs = ",np.sum(probs))
+#    print('test')
     vels = output[0, new_num_notes: 2*new_num_notes]
     #print(vels)
     # this is just a makeshift way to produce reasonable velocities; please change once better velocity generation is possible - DDJZ
     #vels = 40*(vels + 1.5)
     # makesshift way number 2
-    vels = 3*vels
-    vels = vels.astype(int) # to convert to int velocities, as required by MIDI
+    #vels = 2*(vels+0.2)
+    #vels = vels + 0.5
+    #vels = vels.astype(int) # to convert to int velocities, as required by MIDI
     print(vels)
+    print("average of vels = ",np.average(vels))
     vels = np.maximum(vels, 0) # because velocities are floored at 0
-    vels = np.minimum(vels, 127) # because velocities are capped at 127
+    vels = np.minimum(vels, 1) # because normalized velocities are capped at 1
     notes = np.multiply(sample_probability_vector(probs), vels)
     return probs, vels, notes
 
@@ -112,7 +101,11 @@ seed_chords = pickle.load(open(seed_chord_path+seed_name, 'rb'))[:seed_length]
 
 #changed - DDJZ
 #seed = ind_to_onehot(sd)[:,low_crop:high_crop]
-seed = sd[:8*seed_length, low_crop:high_crop]
+seed = sd[:2*fs*seed_length, low_crop:high_crop]
+
+seed[:,:,1] = seed[:,:,1]/max_velocity #normalize velocity
+#for sake of testing w/o velocity:
+#seed[:,:,1] = 0.5#*seed[:,:,0]
 seed = np.reshape(seed, (seed.shape[0],-1))
 
 print('loading polyphonic model ...')
@@ -157,8 +150,8 @@ chords=np.array(chords)
 
 if counter_feature:
     counter = [[0,0,0],[0,0,1],[0,1,0],[0,1,1],[1,0,0],[1,0,1],[1,1,0],[1,1,1]]
-    counter = np.array(counter*(len(ch_model.song)-2))
-    chords = np.append(chords, counter, axis=1)
+    counter = np.array(counter*2*(len(ch_model.song)-2)) #ad hoc
+    chords = np.append(chords, counter[:chords.shape[0]], axis=1) #ad hoc
 
 
 seed = np.append(seed, chords[:seed.shape[0]], axis=1)
@@ -186,6 +179,9 @@ for chord in chords[seed.shape[0]:]:
     next_step = melody_model.predict(next_input)
     probs, vels, notes = notes_from_model(next_step)
     rest.append(notes)
+    
+rest = np.multiply(rest, max_velocity) # normalized velocities
+rest = rest.astype(int) # velocities are ints
 
 rest = np.array(rest)
 rest = np.pad(rest, ((0,0),(low_crop,num_notes-high_crop)), mode='constant', constant_values=0)

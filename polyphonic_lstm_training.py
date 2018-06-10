@@ -2,7 +2,7 @@
 from settings import *
 from keras.models import Sequential, Model
 from keras.layers.recurrent import LSTM
-from keras.layers import Dense, Activation, Lambda, Concatenate, Input
+from keras.layers import Dense, Activation, Lambda, Concatenate, Input, Dropout
 from keras.layers.embeddings import Embedding
 from keras.optimizers import RMSprop, Adam
 # from keras.utils import to_categorical
@@ -20,7 +20,7 @@ import _pickle as pickle
 import data_class
 import chord_model
 
-#from keras import losses
+from keras import losses
 
 
 import tensorflow as tf
@@ -35,7 +35,7 @@ from keras.backend.tensorflow_backend import set_session
 def weighted_square_error(y_true, y_pred):
     
     #mse factor
-    mse_factor = 1e-04
+    #mse_factor = 1
     
     prob_true = y_true[:, :new_num_notes]
     #print("prob_true.shape", prob_true.shape)
@@ -45,13 +45,13 @@ def weighted_square_error(y_true, y_pred):
     #print("vel_true.shape", vel_true.shape)
     vel_pred = y_pred[:, new_num_notes: 2*new_num_notes]
     #print("vel_pred.shape", vel_pred.shape)
-    ce = tf.losses.sigmoid_cross_entropy(prob_true, prob_pred)
+    ce = losses.binary_crossentropy(prob_true, prob_pred)
     #print(ce)
     #notes_true = tf.multiply(prob_true,vel_true)
     #notes_pred = tf.multiply(prob_true,vel_pred)
     vel_pair = tf.multiply(prob_true, vel_pred) + tf.multiply(1 - prob_true, vel_true) # model DeepJ's implementation
-    mse = tf.losses.mean_squared_error(vel_true, vel_pair)
-    cost = ce + mse_factor*mse
+    mse = losses.mean_squared_error(vel_true, vel_pair)
+    cost = ce + mse
     return cost
 
 
@@ -87,7 +87,16 @@ def make_feature_vector(song, chords, chord_embed_method, chord_embed_model):
         X = song[:((len(chords)*fs*2)-1)]
 #    print(X.shape)
     X = X[:,low_crop:high_crop]
+    X[:,:,1] = X[:,:,1]/max_velocity #normalize velocity
+    # ok this is kinda stupid but for testing, ignoring all velocity:
+    #X[:,:,1] = 0.5
+#    print('\n',np.sum(X[:,:,1]))
+#    print(np.sum(X[:,:,0]))
+    #print('\n')
+    #rows, cols = np.nonzero(X[:,:,1])
+    #print(X[:,:,1][rows,cols])
     X = np.reshape(X, (X.shape[0], -1))
+    #print(np.sum(X))
     if chord_embed_method == 'embed':
         X_chords = list(chord_embed_model.embed_chords_song(chords))
     elif chord_embed_method == 'onehot':
@@ -116,10 +125,14 @@ def make_feature_vector(song, chords, chord_embed_method, chord_embed_model):
     if counter_feature:
         counter = [[0,0,0],[0,0,1],[0,1,0],[0,1,1],[1,0,0],[1,0,1],[1,1,0],[1,1,1]]
         if next_chord_feature:
-            counter = np.array(counter*(len(X_chords)-1))[:-1]
+            #counter = np.array(counter*(len(X_chords)-1))[:-1] #ad hoc fix
+            counter = np.array(counter*(len(X)-1))[:-1]
         else:
-            counter = np.array(counter*len(X_chords))[:-1]
-        X = np.append(X, counter, axis=1)
+            #counter = np.array(counter*len(X_chords))[:-1]
+            counter = np.array(counter*len(X))[:-1]
+        #print(X.shape)
+        #print(counter.shape)
+        X = np.append(X, counter[:X.shape[0]], axis=1)
     X = X[:-1]
     X = np.reshape(X, (X.shape[0], 1, -1))
     
@@ -128,29 +141,31 @@ def make_feature_vector(song, chords, chord_embed_method, chord_embed_model):
 
 def main():
     # Path to the fully trained chord model for the chord embeddings:
-    chord_model_path = 'models/chords/1528249842-Shifted_True_Lr_5e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_9_testsize_1_samples_per_bar8/model_Epoch10.pickle'
+    chord_model_path = 'models/chords/1528360369-Shifted_True_Lr_5e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_324_testsize_36_samples_per_bar16/model_Epoch24.pickle'
     # Path where the polyphonic models are saved:
     model_path = 'models/chords_mldy/'
     model_filetype = '.pickle'
 
     ##are we only training on 5 examples????? --DDJZ
     epochs = 20 # 100
-    train_set_prop = 8
+    train_set_prop = 9
     test_set_prop = 1
-    test_step = 300          # Calculate error for test set every this many songs
+    test_step = 150          # Calculate error for test set every this many songs
 
     verbose = False
     show_plot = False
     save_plot = True
-    lstm_size = 512
+    lstm_size = 256
     batch_size = 16
-    learning_rate = 1e-05
+    learning_rate = 5e-06
     step_size = 1
     save_step = 1
     shuffle_train_set = True
     bidirectional = False
     embedding = False
     optimizer = 'Adam'
+    
+    dropout = 0.8
 
     print('loading data...')
     # Get Train and test sets
@@ -161,9 +176,10 @@ def main():
     print('Test set size: ', test_set_size)
 
     fd = {'shifted': shifted, 'next_chord_feature': next_chord_feature, 'chord_embed_method': chord_embed_method, 'counter': counter_feature, 'highcrop': high_crop, 'lowcrop':low_crop, 'lr': learning_rate, 'opt': optimizer,
-        'bi': bidirectional, 'lstms': lstm_size, 'trainsize': train_set_size, 'testsize': test_set_size}
+        'bi': bidirectional, 'lstms': lstm_size, 'trainsize': train_set_size, 'testsize': test_set_size, 'epochs': epochs}
     
-    model_name = 'Shifted_%(shifted)s_NextChord_%(next_chord_feature)s_ChordEmbed_%(chord_embed_method)s_Counter_%(counter)s_Highcrop_%(highcrop)s_Lowcrop_%(lowcrop)s_Lr_%(lr)s_opt_%(opt)s_bi_%(bi)s_lstmsize_%(lstms)s_trainsize_%(trainsize)s_testsize_%(testsize)s' % fd
+    #model_name = 'Shifted_%(shifted)s_NextChord_%(next_chord_feature)s_ChordEmbed_%(chord_embed_method)s_Counter_%(counter)s_Highcrop_%(highcrop)s_Lowcrop_%(lowcrop)s_Lr_%(lr)s_opt_%(opt)s_bi_%(bi)s_lstmsize_%(lstms)s_trainsize_%(trainsize)s_testsize_%(testsize)s_epochs_%(epochs)s' % fd
+    model_name = 'lstm_1_with_softmax'
 
     model_path = model_path + model_name + '/'
     if not os.path.exists(model_path):
@@ -201,11 +217,20 @@ def main():
     #model.add(Lambda(lambda x : tf.concat([note_dense(x), volume_dense(x)], axis = -1)))'''
 
     inputs = Input(shape = (step_size, (new_num_notes*2)+chord_dim+counter_size))
-    lstm = LSTM(lstm_size, batch_size = batch_size)(inputs)
-    for l in range(num_poly_layers-1):
-        lstm = LSTM(lstm_size, batch_size = batch_size)(lstm)
+    if bidirectional:
+        lstm = Bidirectional(LSTM(lstm_size, batch_size = batch_size, return_sequences = True))(inputs)
+        lstm = Dropout(dropout)(lstm)
+        for l in range(num_poly_layers-1):
+            lstm = Bidirectional(LSTM(lstm_size, batch_size = batch_size))(lstm)
+            lstm = Dropout(dropout)(lstm)
+    else:
+        lstm = LSTM(lstm_size, batch_size = batch_size)(inputs)
+        lstm = Dropout(dropout)(lstm)
+        for l in range(num_poly_layers-1):
+            lstm = LSTM(lstm_size, batch_size = batch_size)(lstm)
+            lstm = Dropout(dropout)(lstm)
 
-    note_dense = Dense(new_num_notes, activation = 'sigmoid', name = 'note_dense')(lstm)
+    note_dense = Dense(new_num_notes, activation = 'softmax', name = 'note_dense')(lstm)
     volume_dense = Dense(new_num_notes, name = 'volume_dense')(lstm)
     denses = Concatenate(axis = -1)([note_dense, volume_dense])
     model = Model(inputs = inputs, outputs = denses)
@@ -217,7 +242,7 @@ def main():
     if optimizer == 'RMS': optimizer = RMSprop(lr=learning_rate)
     if optimizer == 'Adam': optimizer = Adam(lr=learning_rate)
     #loss = 'mean_squared_error' #changed from categorical_crossentropy, since output no longer probability.
-    loss = [weighted_square_error]
+    loss = weighted_square_error
     model.compile(optimizer, loss)
 
 
@@ -350,8 +375,9 @@ def main():
                 pickle.dump(total_train_loss_array,open(model_path+'total_train_loss_array.pickle', 'wb'))
                 total_train_loss = 0
 
+        total_train_loss = 0
         if e%save_step is 0:
-            print('saving model')
+            print('\nsaving model')
             model_save_path = model_path + 'model' + 'Epoch' + str(e) + model_filetype
             model.save(model_save_path)
 

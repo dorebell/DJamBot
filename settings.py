@@ -70,8 +70,10 @@ num_notes = 128
 new_num_notes = high_crop - low_crop
 chord_embedding_dim = 10
 
+max_velocity = 127
+
 #double_sample_chords = False
-double_sample_notes = True
+double_sample_notes = False
 
 sample_factor = 2
 
@@ -84,7 +86,7 @@ offset = 16
 
 # Some parameters to extract the pianorolls
 # fs = 4 for 8th notes
-fs = 4
+fs = 8
 samples_per_bar = fs*2
 octave = 12
 melody_fs = 4
