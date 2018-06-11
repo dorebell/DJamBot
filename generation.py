@@ -22,7 +22,7 @@ chord_model_name = 'model_Epoch24.pickle'
 melody_model_folder = 'models/chords_mldy/lstm_2_dropout_0.8_learning_rate_5e-06_lstm_size_256_bidir/'
 melody_model_name = 'modelEpoch10.pickle'
 
-midi_save_folder = 'predicted_midi/lstm_2_bidir/'
+midi_save_folder = 'predicted_midi/'
 
 # changed seed_path to be pianoroll folder
 #seed_path = 'data/' + shift_folder + 'indroll/'
@@ -65,47 +65,24 @@ def sample_probability_vector(prob_vector):
         note_vector[i] = np.random.multinomial(1, [1 - prob, prob])[1]
     return note_vector
 
-# this might not be needed - DDJZ
-def ind_to_onehot(ind):
-    onehot = np.zeros((len(ind), num_notes))
-    for i, step in enumerate(ind):
-        for note in step:
-            onehot[i,note]=1
-    return onehot
-
 def notes_from_model(output):
     probs = output[0,:new_num_notes]
-    #print(probs)
-    print("sum of probs = ",np.sum(probs))
-#    print('test')
+    #print("sum of probs = ",np.sum(probs))
     vels = output[0, new_num_notes: 2*new_num_notes]
     #print(vels)
-    # this is just a makeshift way to produce reasonable velocities; please change once better velocity generation is possible - DDJZ
-    #vels = 40*(vels + 1.5)
-    # makesshift way number 2
-    #vels = 2*(vels+0.2)
-    #vels = vels + 0.5
-    #vels = vels.astype(int) # to convert to int velocities, as required by MIDI
-    print(vels)
-    print("average of vels = ",np.average(vels))
+    #print("average of vels = ",np.average(vels))
     vels = np.maximum(vels, 0) # because velocities are floored at 0
     vels = np.minimum(vels, 1) # because normalized velocities are capped at 1
     notes = np.multiply(sample_probability_vector(probs), vels)
     return probs, vels, notes
 
-
-#sd = pickle.load(open(seed_path+seed_name, 'rb'))[:8*seed_length]
 sd = pickle.load(open(seed_path+seed_name, 'rb'))
 
 seed_chords = pickle.load(open(seed_chord_path+seed_name, 'rb'))[:seed_length]
 
-#changed - DDJZ
-#seed = ind_to_onehot(sd)[:,low_crop:high_crop]
 seed = sd[:2*fs*seed_length, low_crop:high_crop]
 
 seed[:,:,1] = seed[:,:,1]/max_velocity #normalize velocity
-#for sake of testing w/o velocity:
-#seed[:,:,1] = 0.5#*seed[:,:,0]
 seed = np.reshape(seed, (seed.shape[0],-1))
 
 print('loading polyphonic model ...')
@@ -138,13 +115,9 @@ for j in range((len(ch_model.song)-2)*fs*2):
     ind = int(((j+1)/(fs*2)))
     if next_chord_feature:
         ind2 = int(((j+1)/(fs*2)))+1
-#        print(j)
-#        print(ind, ' ', ind2)
         chords.append(list(embedded_chords[ind])+list(embedded_chords[ind2]))
     else:
         chords.append(embedded_chords[ind])
-
-#    print(ind)
 
 chords=np.array(chords)
 
@@ -187,13 +160,6 @@ rest = np.array(rest)
 rest = np.pad(rest, ((0,0),(low_crop,num_notes-high_crop)), mode='constant', constant_values=0)
 ind = np.nonzero(rest)
 
-'''for i,note in enumerate(rest):
-    print(i)
-    print(np.nonzero(note))'''
-#rest = np.reshape(rest, (rest.shape[1], rest.shape[0]))
-#note_ind = mf.pianoroll_to_note_index(rest)
-#print(ch_model.song)
-
 
 if not os.path.exists(midi_save_folder):
     os.makedirs(midi_save_folder)
@@ -210,3 +176,12 @@ for instrument_name in instrument_names:
     
     mf.pianoroll_to_midi_continous(rest, midi_save_folder, instrument_name, instrument_name, BPM)
 #    mf.pianoroll_to_midi(rest, 'test/midi/', instrument_name, instrument_name, BPM)
+
+# obsolete function from JamBot
+'''def ind_to_onehot(ind):
+    onehot = np.zeros((len(ind), num_notes))
+    for i, step in enumerate(ind):
+        for note in step:
+            onehot[i,note]=1
+    return onehot
+'''

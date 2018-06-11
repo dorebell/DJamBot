@@ -34,21 +34,11 @@ from keras.backend.tensorflow_backend import set_session
 
 def weighted_square_error(y_true, y_pred):
     
-    #mse factor
-    #mse_factor = 1
-    
     prob_true = y_true[:, :new_num_notes]
-    #print("prob_true.shape", prob_true.shape)
     prob_pred = y_pred[:, :new_num_notes]
-    #print("prob_pred.shape", prob_pred.shape)
     vel_true = y_true[:, new_num_notes: 2*new_num_notes]
-    #print("vel_true.shape", vel_true.shape)
     vel_pred = y_pred[:, new_num_notes: 2*new_num_notes]
-    #print("vel_pred.shape", vel_pred.shape)
     ce = losses.binary_crossentropy(prob_true, prob_pred)
-    #print(ce)
-    #notes_true = tf.multiply(prob_true,vel_true)
-    #notes_pred = tf.multiply(prob_true,vel_pred)
     vel_pair = tf.multiply(prob_true, vel_pred) + tf.multiply(1 - prob_true, vel_true) # model DeepJ's implementation
     mse = losses.mean_squared_error(vel_true, vel_pair)
     cost = ce + mse
@@ -57,6 +47,7 @@ def weighted_square_error(y_true, y_pred):
 
 # Test function
 def test():
+    # currently this function is not really used, but its syntax is copied in the main function
     print('\nTesting:')
     total_test_loss = 0
 
@@ -72,12 +63,12 @@ def test():
     print('-'*50)
     plt.plot(total_test_loss_array, 'b-')
     plt.plot(total_train_loss_array, 'r-')
-#    plt.axis([0, epochs, 0, 5])
     if show_plot: plt.show()
     if save_plot: plt.savefig(model_path+'plot.png')
     pickle.dump(total_test_loss_array,open(model_path+'total_test_loss_array.pickle', 'wb'))
     pickle.dump(total_train_loss_array,open(model_path+'total_train_loss_array.pickle', 'wb'))
 
+# Make feature vectors with the notes and the chord information
 def make_feature_vector(song, chords, chord_embed_method, chord_embed_model):
     if  next_chord_feature:
 #        X = np.array(data_class.make_one_hot_note_vector(song[:(((len(chords)-1)*fs*2)-1)], num_notes))
@@ -85,18 +76,10 @@ def make_feature_vector(song, chords, chord_embed_method, chord_embed_model):
     else:
 #        X = np.array(data_class.make_one_hot_note_vector(song[:((len(chords)*fs*2)-1)], num_notes))
         X = song[:((len(chords)*fs*2)-1)]
-#    print(X.shape)
+    print(X.shape)
     X = X[:,low_crop:high_crop]
     X[:,:,1] = X[:,:,1]/max_velocity #normalize velocity
-    # ok this is kinda stupid but for testing, ignoring all velocity:
-    #X[:,:,1] = 0.5
-#    print('\n',np.sum(X[:,:,1]))
-#    print(np.sum(X[:,:,0]))
-    #print('\n')
-    #rows, cols = np.nonzero(X[:,:,1])
-    #print(X[:,:,1][rows,cols])
     X = np.reshape(X, (X.shape[0], -1))
-    #print(np.sum(X))
     if chord_embed_method == 'embed':
         X_chords = list(chord_embed_model.embed_chords_song(chords))
     elif chord_embed_method == 'onehot':
@@ -123,15 +106,12 @@ def make_feature_vector(song, chords, chord_embed_method, chord_embed_model):
     X = np.append(X, X_chords_new, axis=1)
     
     if counter_feature:
+        # the following works for 8th notes--modify if using other subdivisions
         counter = [[0,0,0],[0,0,1],[0,1,0],[0,1,1],[1,0,0],[1,0,1],[1,1,0],[1,1,1]]
         if next_chord_feature:
-            #counter = np.array(counter*(len(X_chords)-1))[:-1] #ad hoc fix
-            counter = np.array(counter*(len(X)-1))[:-1]
+            counter = np.array(counter*(len(X_chords)-1))[:-1]
         else:
-            #counter = np.array(counter*len(X_chords))[:-1]
-            counter = np.array(counter*len(X))[:-1]
-        #print(X.shape)
-        #print(counter.shape)
+            counter = np.array(counter*len(X_chords))[:-1]
         X = np.append(X, counter[:X.shape[0]], axis=1)
     X = X[:-1]
     X = np.reshape(X, (X.shape[0], 1, -1))
@@ -146,7 +126,6 @@ def main():
     model_path = 'models/chords_mldy/'
     model_filetype = '.pickle'
 
-    ##are we only training on 5 examples????? --DDJZ
     epochs = 20 # 100
     train_set_prop = 9
     test_set_prop = 1
@@ -178,8 +157,7 @@ def main():
     fd = {'shifted': shifted, 'next_chord_feature': next_chord_feature, 'chord_embed_method': chord_embed_method, 'counter': counter_feature, 'highcrop': high_crop, 'lowcrop':low_crop, 'lr': learning_rate, 'opt': optimizer,
         'bi': bidirectional, 'lstms': lstm_size, 'trainsize': train_set_size, 'testsize': test_set_size, 'epochs': epochs}
     
-    #model_name = 'Shifted_%(shifted)s_NextChord_%(next_chord_feature)s_ChordEmbed_%(chord_embed_method)s_Counter_%(counter)s_Highcrop_%(highcrop)s_Lowcrop_%(lowcrop)s_Lr_%(lr)s_opt_%(opt)s_bi_%(bi)s_lstmsize_%(lstms)s_trainsize_%(trainsize)s_testsize_%(testsize)s_epochs_%(epochs)s' % fd
-    model_name = 'lstm_1_with_softmax'
+    model_name = 'Shifted_%(shifted)s_NextChord_%(next_chord_feature)s_ChordEmbed_%(chord_embed_method)s_Counter_%(counter)s_Highcrop_%(highcrop)s_Lowcrop_%(lowcrop)s_Lr_%(lr)s_opt_%(opt)s_bi_%(bi)s_lstmsize_%(lstms)s_trainsize_%(trainsize)s_testsize_%(testsize)s_epochs_%(epochs)s' % fd
 
     model_path = model_path + model_name + '/'
     if not os.path.exists(model_path):
@@ -203,19 +181,6 @@ def main():
     # Build Melody Model
     print('creating model...')
 
-    '''
-    model = Sequential()
-    # model.add(LSTM(lstm_size, batch_size=batch_size, input_shape=(step_size, new_num_notes+chord_dim+counter_size), stateful=True))
-
-    #support for adding multiple LSTM layers -DDJZ
-    for l in range(num_poly_layers):
-        model.add(LSTM(lstm_size,  batch_input_shape=(batch_size, step_size, (new_num_notes*2)+chord_dim+counter_size), stateful=True))
-
-    note_dense = Dense(new_num_notes, activation='sigmoid', name='note_dense')
-    volume_dense = Dense(new_num_notes, name='volume_dense')
-
-    #model.add(Lambda(lambda x : tf.concat([note_dense(x), volume_dense(x)], axis = -1)))'''
-
     inputs = Input(shape = (step_size, (new_num_notes*2)+chord_dim+counter_size))
     if bidirectional:
         lstm = Bidirectional(LSTM(lstm_size, batch_size = batch_size, return_sequences = True))(inputs)
@@ -230,7 +195,7 @@ def main():
             lstm = LSTM(lstm_size, batch_size = batch_size)(lstm)
             lstm = Dropout(dropout)(lstm)
 
-    note_dense = Dense(new_num_notes, activation = 'softmax', name = 'note_dense')(lstm)
+    note_dense = Dense(new_num_notes, activation = 'sigmoid', name = 'note_dense')(lstm)
     volume_dense = Dense(new_num_notes, name = 'volume_dense')(lstm)
     denses = Concatenate(axis = -1)([note_dense, volume_dense])
     model = Model(inputs = inputs, outputs = denses)
@@ -238,11 +203,9 @@ def main():
 
 
     #removed sigmoid activation so volumes will not be probabilities but just values - DDJZ
-    #model.add(Activation('sigmoid'))
     if optimizer == 'RMS': optimizer = RMSprop(lr=learning_rate)
     if optimizer == 'Adam': optimizer = Adam(lr=learning_rate)
-    #loss = 'mean_squared_error' #changed from categorical_crossentropy, since output no longer probability.
-    loss = weighted_square_error
+    loss = weighted_square_error  #changed from categorical_crossentropy, since output no longer probability.
     model.compile(optimizer, loss)
 
 
@@ -251,60 +214,6 @@ def main():
     total_train_loss_array = []
     total_test_loss = 0
     total_train_loss = 0
-
-    # Make feature vectors with the notes and the chord information
-
-    #needs to be changed--the vectors should not be "one" hot -DDJZ
-    '''
-    def make_feature_vector(song, chords, chord_embed_method):
-        
-        if  next_chord_feature:
-            X = np.array(data_class.make_one_hot_note_vector(song[:(((len(chords)-1)*fs*2)-1)], num_notes))
-        else:
-            X = np.array(data_class.make_one_hot_note_vector(song[:((len(chords)*fs*2)-1)], num_notes))
-    #    print(X.shape)
-        X = X[:,low_crop:high_crop]
-    #    print(X.shape)
-        if chord_embed_method == 'embed':
-            X_chords = list(chord_embed_model.embed_chords_song(chords))
-        elif chord_embed_method == 'onehot':
-            X_chords = data_class.make_one_hot_vector(chords, num_chords)
-        elif chord_embed_method == 'int':
-            X_chords = [[x] for x in chords]
-        X_chords_new = []
-        Y = X[1:]
-        
-        for j, _ in enumerate(X):
-            ind = int(((j+1)/(fs*2)))
-            
-            if next_chord_feature:
-                ind2 = int(((j+1)/(fs*2)))+1
-    #            print(j)
-    #            print(ind, ' ', ind2)
-    #            print(X_chords[ind].shape)
-                X_chords_new.append(list(X_chords[ind])+list(X_chords[ind2]))
-            else:
-                X_chords_new.append(X_chords[ind])
-                
-        X_chords_new = np.array(X_chords_new)    
-        X = np.append(X, X_chords_new, axis=1)
-        
-            
-        
-        if counter_feature:
-            counter = [[0,0,0],[0,0,1],[0,1,0],[0,1,1],[1,0,0],[1,0,1],[1,1,0],[1,1,1]]
-            if next_chord_feature:
-                counter = np.array(counter*(len(X_chords)-1))[:-1]
-            else:
-                counter = np.array(counter*len(X_chords))[:-1]
-            X = np.append(X, counter, axis=1)
-        X = X[:-1]
-        X = np.reshape(X, (X.shape[0], 1, X.shape[1]))
-        
-        return X, Y
-    '''
-
-    #changed; now song is assumed to be of type pianoroll - DDJZ
 
     # Save Parameters to text file
     with open(model_path + 'params.txt', "w") as text_file:
@@ -368,7 +277,6 @@ def main():
                 print('-'*50)
                 plt.plot(total_test_loss_array, 'b-')
                 plt.plot(total_train_loss_array, 'r-')
-            #    plt.axis([0, epochs, 0, 5])
                 if show_plot: plt.show()
                 if save_plot: plt.savefig(model_path+'plot.png')
                 pickle.dump(total_test_loss_array,open(model_path+'total_test_loss_array.pickle', 'wb'))
