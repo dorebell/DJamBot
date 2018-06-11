@@ -1,5 +1,10 @@
 Version Updates
 
+v.0.2.0 - 06/10/18
+- added custom loss function
+- velocities are now normalized
+- output is still a bit buggy (low probs + velocities produced)
+
 v.0.1.1 - 06/03/18
 A few changes:
 - changed the model syntax in polyphonic_lstm_training.py to functional API
